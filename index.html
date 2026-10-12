@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patient Access – Registration &amp; Admission</title>
+<style>
+:root{
+  --font: Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
+  --title-1:#2f557f; --title-2:#1c3b5e; --title-text:#ffffff;
+  --tool-1:#f6f8fa; --tool-2:#dde3ea; --tool-border:#9aa9ba;
+  --frame:#d6dde6; --panel:#eef2f6; --surface:#ffffff; --surface-alt:#f5f7fa;
+  --text:#1b2633; --muted:#5a6878; --line:#b9c5d3; --line-soft:#d8e0e9;
+  --sec-1:#e3ebf4; --sec-2:#c9d8e8; --sec-text:#1f3a5a;
+  --accent:#1d5b9e; --accent-ink:#ffffff; --accent-soft:#dbe8f6;
+  --req-bg:#fff5c4; --req-border:#c9b55a;
+  --err:#b3261e; --err-bg:#fde9e7; --ok:#2e6b30; --ok-bg:#e5f3e3;
+  --banner-1:#d4e1ef; --banner-2:#bccee3; --banner-text:#102a45;
+  --row-hover:#e8f0fa; --row-sel:#cfe0f3;
+  --nav-sel:#ffffff; --focus:#f2a900;
+  --shadow: 0 2px 10px rgba(16,32,52,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --title-1:#24425f; --title-2:#152b42; --title-text:#eef3f8;
+    --tool-1:#2b333d; --tool-2:#222931; --tool-border:#46525f;
+    --frame:#1b2129; --panel:#20272f; --surface:#262e37; --surface-alt:#2c353f;
+    --text:#e3e9ef; --muted:#9aa8b6; --line:#45515e; --line-soft:#36414c;
+    --sec-1:#2d3c4c; --sec-2:#263444; --sec-text:#d4e2f1;
+    --accent:#4c8fd6; --accent-ink:#0d1b2a; --accent-soft:#2a3e55;
+    --req-bg:#3d3820; --req-border:#8a7a35;
+    --err:#ff8a80; --err-bg:#3d2422; --ok:#9fd49b; --ok-bg:#24372a;
+    --banner-1:#2b3d51; --banner-2:#233345; --banner-text:#e3eef9;
+    --row-hover:#2c3a4a; --row-sel:#33475d; --nav-sel:#262e37;
+  }
+}
+:root[data-theme="dark"]{
+  --title-1:#24425f; --title-2:#152b42; --title-text:#eef3f8;
+  --tool-1:#2b333d; --tool-2:#222931; --tool-border:#46525f;
+  --frame:#1b2129; --panel:#20272f; --surface:#262e37; --surface-alt:#2c353f;
+  --text:#e3e9ef; --muted:#9aa8b6; --line:#45515e; --line-soft:#36414c;
+  --sec-1:#2d3c4c; --sec-2:#263444; --sec-text:#d4e2f1;
+  --accent:#4c8fd6; --accent-ink:#0d1b2a; --accent-soft:#2a3e55;
+  --req-bg:#3d3820; --req-border:#8a7a35;
+  --err:#ff8a80; --err-bg:#3d2422; --ok:#9fd49b; --ok-bg:#24372a;
+  --banner-1:#2b3d51; --banner-2:#233345; --banner-text:#e3eef9;
+  --row-hover:#2c3a4a; --row-sel:#33475d; --nav-sel:#262e37;
+}
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
+*,*::before,*::after{ box-sizing:inherit; }
+body{ margin:0; height:100%; font:12px/1.4 var(--font); color:var(--text); background:var(--frame); }
+button,input,select,textarea{ font:inherit; color:inherit; }
+img{ max-width:100%; }
+:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+.hidden{ display:none !important; }
+.sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* ---------- Buttons (Windows-style bevel) ---------- */
+.btn{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; min-height:24px; border:1px solid var(--tool-border); border-radius:2px;
+  background:linear-gradient(var(--tool-1),var(--tool-2)); cursor:pointer; white-space:nowrap; }
+.btn:hover{ border-color:var(--accent); background:linear-gradient(var(--surface),var(--accent-soft)); }
+.btn:active{ background:var(--tool-2); }
+.btn[disabled]{ opacity:.5; cursor:default; }
+.btn.primary{ background:linear-gradient(#3a76b8,#1d5b9e); color:#fff; border-color:#164a82; font-weight:bold; }
+.btn.primary:hover{ background:linear-gradient(#4a86c8,#2468b0); }
+.btn.danger{ color:var(--err); }
+.btn.small{ padding:1px 7px; min-height:20px; font-size:11px; }
+.btn svg{ width:14px; height:14px; flex:none; }
+.linkbtn{ background:none; border:0; padding:0; color:var(--accent); text-decoration:underline; cursor:pointer; }
+
+/* ---------- Login ---------- */
+#login{ height:100%; display:flex; align-items:center; justify-content:center; padding:16px;
+  background:linear-gradient(160deg,var(--title-1),var(--title-2)); }
+.win{ background:var(--panel); border:1px solid #0d2238; box-shadow:var(--shadow); width:100%; max-width:430px; }
+.win-title{ display:flex; align-items:center; gap:8px; padding:5px 8px; color:var(--title-text); font-weight:bold;
+  background:linear-gradient(var(--title-1),var(--title-2)); }
+.win-title svg{ width:16px; height:16px; }
+.login-body{ padding:18px 20px 14px; }
+.login-brand{ display:flex; gap:12px; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+.login-brand .mark{ width:40px; height:40px; flex:none; }
+.login-brand h1{ margin:0; font-size:16px; color:var(--sec-text); }
+.login-brand p{ margin:2px 0 0; color:var(--muted); }
+.login-row{ display:grid; grid-template-columns:90px 1fr; align-items:center; gap:8px; margin-bottom:9px; }
+.login-row label{ text-align:right; }
+.login-msg{ min-height:18px; color:var(--err); margin:4px 0 8px 98px; }
+.login-actions{ display:flex; justify-content:flex-end; gap:6px; border-top:1px solid var(--line); padding-top:10px; }
+.login-note{ color:var(--muted); font-size:11px; margin-top:10px; }
+
+/* ---------- Inputs ---------- */
+input[type=text],input[type=tel],input[type=email],input[type=date],input[type=datetime-local],input[type=number],select,textarea{
+  width:100%; min-height:22px; padding:2px 4px; border:1px solid var(--line); border-radius:0; background:var(--surface); }
+textarea{ min-height:46px; resize:vertical; }
+input:focus,select:focus,textarea:focus{ border-color:var(--accent); outline:1px solid var(--accent); outline-offset:0; }
+input[readonly]{ background:var(--surface-alt); color:var(--muted); }
+.is-req{ background:var(--req-bg) !important; border-color:var(--req-border) !important; }
+.is-invalid{ border-color:var(--err) !important; outline:1px solid var(--err); background:var(--err-bg) !important; }
+input:disabled,textarea:disabled,select:disabled{ opacity:.6; }
+
+/* ---------- App frame ---------- */
+#app{ height:100%; display:flex; flex-direction:column; min-height:0; }
+.titlebar{ display:flex; align-items:center; gap:10px; padding:4px 8px; color:var(--title-text);
+  background:linear-gradient(var(--title-1),var(--title-2)); flex-wrap:wrap; }
+.titlebar .app-name{ display:flex; align-items:center; gap:7px; font-weight:bold; font-size:13px; margin-right:auto; }
+.titlebar .app-name svg{ width:18px; height:18px; }
+.session{ display:flex; align-items:center; gap:4px 14px; flex-wrap:wrap; font-size:11px; }
+.session b{ font-weight:bold; }
+.session .k{ opacity:.75; margin-right:3px; }
+.titlebar .btn{ color:var(--text); }
+.toolbar{ display:flex; gap:4px; align-items:center; padding:3px 6px; border-bottom:1px solid var(--tool-border);
+  background:linear-gradient(var(--tool-1),var(--tool-2)); flex-wrap:wrap; }
+.toolbar .sep{ width:1px; align-self:stretch; background:var(--tool-border); margin:2px 4px; }
+.tb{ border-color:transparent; background:transparent; }
+.tb:hover{ border-color:var(--tool-border); }
+.tb.active{ border-color:var(--tool-border); background:var(--surface); }
+.workspace{ flex:1; display:flex; min-height:0; }
+.nav{ width:180px; flex:none; background:var(--panel); border-right:1px solid var(--tool-border); display:flex; flex-direction:column; }
+.nav-head{ padding:4px 8px; font-weight:bold; color:var(--sec-text); background:linear-gradient(var(--sec-1),var(--sec-2)); border-bottom:1px solid var(--line); }
+.nav button{ display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:6px 10px; border:0; border-bottom:1px solid var(--line-soft);
+  background:transparent; cursor:pointer; }
+.nav button:hover{ background:var(--row-hover); }
+.nav button.active{ background:var(--nav-sel); font-weight:bold; color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+.count{ min-width:20px; padding:0 5px; border-radius:8px; background:var(--accent-soft); color:var(--sec-text); font-size:11px; text-align:center; font-weight:normal; }
+.nav-foot{ margin-top:auto; padding:8px 10px; color:var(--muted); font-size:11px; border-top:1px solid var(--line); }
+.main{ flex:1; min-width:0; display:flex; flex-direction:column; background:var(--panel); }
+.view{ flex:1; min-height:0; display:flex; flex-direction:column; }
+.view-head{ display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--surface); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.view-head h2{ margin:0; font-size:14px; color:var(--sec-text); margin-right:auto; }
+.view-body{ flex:1; overflow:auto; padding:10px; }
+.statusbar{ display:flex; gap:16px; padding:2px 8px; font-size:11px; color:var(--muted); border-top:1px solid var(--tool-border);
+  background:linear-gradient(var(--tool-1),var(--tool-2)); flex-wrap:wrap; }
+.statusbar span:first-child{ margin-right:auto; }
+.store-warn{ padding:6px 10px; background:var(--err-bg); color:var(--err); border-bottom:1px solid var(--err); }
+
+/* ---------- Conversation tabs ---------- */
+.tabs{ display:flex; gap:2px; padding:6px 10px 0; background:var(--panel); border-bottom:1px solid var(--line); overflow-x:auto; flex:none; }
+.tab{ position:relative; padding:4px 12px; border:1px solid var(--line); border-bottom:0; background:linear-gradient(var(--tool-1),var(--tool-2));
+  cursor:pointer; white-space:nowrap; margin-bottom:-1px; }
+.tab[aria-selected=true]{ background:var(--surface); font-weight:bold; color:var(--accent); padding-top:6px; margin-top:-2px; }
+.tab .flag{ display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--err); margin-left:5px; vertical-align:1px; }
+.tab .count{ margin-left:5px; }
+.tabpanel{ background:var(--surface); border:1px solid var(--line); border-top:0; padding:10px; }
+
+.section{ border:1px solid var(--line); margin-bottom:10px; background:var(--surface); }
+.section > h3{ margin:0; padding:3px 8px; font-size:12px; color:var(--sec-text); background:linear-gradient(var(--sec-1),var(--sec-2)); border-bottom:1px solid var(--line); }
+.grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px 12px; padding:8px 10px 10px; }
+.fld{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.fld label{ color:var(--text); }
+.fld .req{ color:var(--err); font-weight:bold; margin-left:2px; }
+.fld.check{ flex-direction:row; align-items:center; gap:6px; padding-top:16px; }
+.fld.check label{ order:2; }
+.span-2{ grid-column:span 2; } .span-3{ grid-column:span 3; } .span-4{ grid-column:1 / -1; }
+.hint{ color:var(--muted); font-size:11px; }
+.form-foot{ display:flex; gap:8px; align-items:center; padding:7px 10px; border-top:1px solid var(--tool-border); background:linear-gradient(var(--tool-1),var(--tool-2)); flex-wrap:wrap; flex:none; }
+.form-foot .legend{ margin-right:auto; display:flex; align-items:center; gap:6px; color:var(--muted); }
+.swatch{ display:inline-block; width:22px; height:12px; background:var(--req-bg); border:1px solid var(--req-border); }
+.errbox{ margin-bottom:10px; border:1px solid var(--err); background:var(--err-bg); color:var(--err); padding:7px 10px; }
+.errbox ul{ margin:4px 0 0; padding-left:18px; }
+.errbox button{ color:var(--err); }
+
+/* ---------- Documents ---------- */
+.doc-add{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; padding:10px; }
+.doc-fields{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px 12px; align-content:start; }
+.dropzone{ border:2px dashed var(--line); background:var(--surface-alt); padding:16px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; text-align:center; cursor:pointer; min-height:120px; }
+.dropzone:hover,.dropzone.over{ border-color:var(--accent); background:var(--accent-soft); }
+.dropzone svg{ width:28px; height:28px; color:var(--accent); }
+.preview{ border:1px solid var(--line); background:var(--surface-alt); display:flex; gap:10px; padding:8px; align-items:flex-start; margin-top:8px; }
+.preview .thumb{ width:120px; height:120px; flex:none; display:flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--line-soft); overflow:hidden; }
+.preview .thumb img,.preview .thumb canvas{ max-width:100%; max-height:100%; object-fit:contain; }
+.preview .meta{ min-width:0; display:flex; flex-direction:column; gap:4px; }
+.preview .meta b{ overflow-wrap:anywhere; }
+.pdf-ico{ width:46px; height:56px; color:var(--err); }
+.doc-actions{ grid-column:1 / -1; display:flex; gap:8px; align-items:center; }
+.doc-err{ color:var(--err); }
+
+/* ---------- Tables ---------- */
+.tablewrap{ overflow-x:auto; border:1px solid var(--line); background:var(--surface); }
+table{ border-collapse:collapse; width:100%; }
+th,td{ padding:4px 7px; border-bottom:1px solid var(--line-soft); text-align:left; vertical-align:middle; white-space:nowrap; }
+th{ background:linear-gradient(var(--tool-1),var(--tool-2)); border-bottom:1px solid var(--line); border-right:1px solid var(--line-soft); font-weight:normal; color:var(--sec-text); position:sticky; top:0; }
+tbody tr:nth-child(even){ background:var(--surface-alt); }
+tbody tr:hover{ background:var(--row-hover); }
+tr.clickable{ cursor:pointer; }
+td.actions{ text-align:right; }
+td.actions .btn+ .btn{ margin-left:4px; }
+.clip{ width:14px; height:14px; color:var(--accent); vertical-align:-2px; }
+.pname{ font-weight:bold; color:var(--accent); }
+.empty{ padding:36px 16px; text-align:center; color:var(--muted); background:var(--surface); border:1px solid var(--line); }
+.empty p{ margin:0 0 10px; font-size:13px; }
+.list-tools{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+.list-tools input{ width:240px; max-width:100%; }
+.list-tools select{ width:auto; }
+.list-tools .hint{ margin-left:auto; }
+
+/* ---------- Patient banner & summary ---------- */
+.banner{ background:linear-gradient(var(--banner-1),var(--banner-2)); color:var(--banner-text); border-bottom:1px solid var(--line); padding:6px 10px;
+  display:grid; grid-template-columns:minmax(200px,1.4fr) repeat(3,minmax(0,1fr)); gap:2px 16px; }
+.banner .bn{ font-size:15px; font-weight:bold; }
+.banner .kv{ font-size:11px; }
+.banner .kv span{ opacity:.75; margin-right:4px; }
+.banner .allergy{ color:var(--err); font-weight:bold; }
+.dl{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px 14px; padding:8px 10px; margin:0; }
+.dl div{ min-width:0; }
+.dl dt{ color:var(--muted); font-size:11px; }
+.dl dd{ margin:0; overflow-wrap:anywhere; }
+.none{ padding:8px 10px; color:var(--muted); }
+.summary-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 10px; }
+.summary-grid .wide{ grid-column:1 / -1; }
+
+/* ---------- Modal ---------- */
+.modal-back{ position:fixed; inset:0; background:rgba(10,20,32,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50;
+  padding-top:max(16px, env(safe-area-inset-top,0px)); padding-bottom:max(16px, env(safe-area-inset-bottom,0px)); }
+.modal{ max-width:440px; }
+.modal .body{ padding:14px 16px; display:flex; gap:12px; }
+.modal .body svg{ width:32px; height:32px; flex:none; }
+.modal .foot{ display:flex; justify-content:flex-end; gap:6px; padding:8px 12px; border-top:1px solid var(--line); background:var(--surface-alt); }
+.viewer{ max-width:980px; width:100%; height:100%; max-height:860px; display:flex; flex-direction:column; }
+.viewer .vtool{ display:flex; gap:6px; align-items:center; padding:4px 8px; border-bottom:1px solid var(--tool-border); background:linear-gradient(var(--tool-1),var(--tool-2)); flex-wrap:wrap; }
+.viewer .vtool .vinfo{ margin-right:auto; color:var(--muted); overflow-wrap:anywhere; }
+.viewer .vbody{ flex:1; overflow:auto; background:#5b6672; padding:14px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.viewer .vbody:has(.pdfpage){ align-items:stretch; }
+.viewer .vbody img{ background:#fff; box-shadow:var(--shadow); }
+.viewer .vbody canvas{ background:#fff; box-shadow:var(--shadow); max-width:100%; height:auto; }
+.viewer .vbody iframe{ width:100%; flex:1; min-height:500px; border:0; background:#fff; }
+.viewer .vmsg{ color:#fff; text-align:center; padding:30px; }
+.viewer .vbody .pdfpage{ display:flex; justify-content:center; min-width:min-content; }
+.pdfnav{ display:inline-flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.pdfnav .pgbox{ display:inline-flex; align-items:center; gap:4px; }
+.pdfnav .pgbox input{ width:52px; min-height:20px; padding:1px 3px; }
+.pdfnav .zm{ min-width:42px; text-align:center; }
+.vsep{ width:1px; align-self:stretch; background:var(--tool-border); margin:0 3px; }
+.ftype{ display:inline-block; font-size:10px; font-weight:bold; padding:0 4px; margin-right:4px; border:1px solid currentColor; border-radius:2px; }
+.ftype.pdf{ color:var(--err); } .ftype.img{ color:var(--accent); }
+.win-title .x{ margin-left:auto; background:transparent; border:1px solid transparent; color:var(--title-text); cursor:pointer; padding:0 6px; font-size:14px; line-height:18px; }
+.win-title .x:hover{ background:#c4302b; }
+
+.toast{ position:fixed; right:16px; bottom:calc(76px + env(safe-area-inset-bottom,0px)); z-index:60; background:var(--ok-bg); color:var(--ok); border:1px solid var(--ok);
+  padding:8px 12px; box-shadow:var(--shadow); max-width:360px; }
+.toast.bad{ background:var(--err-bg); color:var(--err); border-color:var(--err); }
+
+/* ---------- Responsive ---------- */
+@media (max-width:1000px){
+  .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .span-3,.span-4{ grid-column:1 / -1; }
+  .banner{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dl{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .summary-grid{ grid-template-columns:1fr; }
+  .doc-add{ grid-template-columns:1fr; }
+}
+@media (max-width:720px){
+  .workspace{ flex-direction:column; }
+  .nav{ width:auto; flex-direction:row; border-right:0; border-bottom:1px solid var(--tool-border); }
+  .nav-head,.nav-foot{ display:none; }
+  .nav button{ flex:1; justify-content:center; gap:6px; border-bottom:0; border-right:1px solid var(--line-soft); }
+  .nav button.active{ box-shadow:inset 0 -3px 0 var(--accent); }
+  .toolbar .tb-label{ display:none; }
+}
+@media (max-width:560px){
+  .grid,.doc-fields,.dl{ grid-template-columns:1fr; }
+  .span-2{ grid-column:1 / -1; }
+  .banner{ grid-template-columns:1fr; }
+  .login-row{ grid-template-columns:1fr; gap:3px; }
+  .login-row label{ text-align:left; }
+  .login-msg{ margin-left:0; }
+  .preview{ flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="win" role="dialog" aria-labelledby="loginTitle">
+    <div class="win-title">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="14" height="14" rx="2" fill="#fff" opacity=".2"/><path d="M8 3v10M3 8h10" stroke="#fff" stroke-width="2.4"/></svg>
+      <span id="loginTitle">Patient Access Login</span>
+    </div>
+    <form class="login-body" id="loginForm" novalidate>
+      <div class="login-brand">
+        <svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="4" fill="#1d5b9e"/><path d="M20 8v24M8 20h24" stroke="#fff" stroke-width="6"/></svg>
+        <div><h1>Registration &amp; Admission</h1><p>Sign in to start a registration session.</p></div>
+      </div>
+      <div class="login-row"><label for="lgUser">User</label><input type="text" id="lgUser" autocomplete="username" placeholder="e.g. jsmith"></div>
+      <div class="login-row"><label for="lgRole">Role</label><select id="lgRole"></select></div>
+      <div class="login-row"><label for="lgFacility">Facility</label><select id="lgFacility"></select></div>
+      <div class="login-msg" id="loginMsg" role="alert"></div>
+      <div class="login-actions">
+        <button type="submit" class="btn primary">OK</button>
+        <button type="button" class="btn" id="loginClear">Clear</button>
+      </div>
+      <div class="login-note">Demo environment: no password is required. Patient records are shared with everyone who uses this portal.</div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+  <header class="titlebar">
+    <div class="app-name">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><rect width="18" height="18" rx="3" fill="#fff" opacity=".18"/><path d="M9 3v12M3 9h12" stroke="#fff" stroke-width="2.6"/></svg>
+      Patient Access – Registration &amp; Admission
+    </div>
+    <div class="session" aria-label="Signed-in session">
+      <div><span class="k">User:</span><b id="hdUser"></b></div>
+      <div><span class="k">Role:</span><b id="hdRole"></b></div>
+      <div><span class="k">Facility:</span><b id="hdFacility"></b></div>
+    </div>
+    <button class="btn small" id="logoutBtn">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2H3v12h3M10 5l3 3-3 3M13 8H6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Log out</button>
+  </header>
+  <div class="toolbar" role="toolbar" aria-label="Actions">
+    <button class="btn tb" data-go="register" title="New registration">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1 14c0-3 2.2-5 5-5s5 2 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M13 4v6M10 7h6" stroke="#2e8b3a" stroke-width="1.8"/></svg>
+      <span class="tb-label">New Registration</span></button>
+    <button class="btn tb" data-go="list" title="Patient list">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M2 8h12M2 13h12" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span class="tb-label">Patient List</span></button>
+    <span class="sep"></span>
+    <button class="btn tb" id="tbComplete" title="Complete admission">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8.5l4 4 8-9" fill="none" stroke="#2e8b3a" stroke-width="2"/></svg>
+      <span class="tb-label">Complete</span></button>
+  </div>
+  <div class="store-warn hidden" id="storeWarn" role="alert"></div>
+  <div class="workspace">
+    <nav class="nav" aria-label="Menu">
+      <div class="nav-head">Menu</div>
+      <button data-go="register">Registration</button>
+      <button data-go="list">Patient List <span class="count" id="navCount">0</span></button>
+      <div class="nav-foot" id="navFoot"></div>
+    </nav>
+    <main class="main">
+      <!-- Registration -->
+      <section class="view" id="vRegister" aria-labelledby="regTitle">
+        <div class="view-head">
+          <h2 id="regTitle">Admit Patient – Registration</h2>
+          <span class="hint">MRN and FIN are assigned when the admission is completed.</span>
+        </div>
+        <div class="tabs" role="tablist" id="tabStrip"></div>
+        <div class="view-body" id="regBody">
+          <div class="errbox hidden" id="errBox" role="alert"></div>
+          <div id="tabPanels"></div>
+        </div>
+        <div class="form-foot">
+          <div class="legend"><span class="swatch"></span><span>Required field (<span id="reqCount"></span> total). ID documents are optional.</span></div>
+          <button class="btn" id="clearBtn">Clear form</button>
+          <button class="btn" id="cancelBtn">Cancel</button>
+          <button class="btn primary" id="completeBtn">Complete admission</button>
+        </div>
+      </section>
+
+      <!-- Patient list -->
+      <section class="view hidden" id="vList" aria-labelledby="listTitle">
+        <div class="view-head"><h2 id="listTitle">Patient List – Admitted Patients</h2>
+          <button class="btn" id="refreshBtn">Refresh</button>
+          <button class="btn" data-go="register">New registration</button></div>
+        <div class="view-body">
+          <div class="list-tools">
+            <label class="sr-only" for="listSearch">Search patients</label>
+            <input type="text" id="listSearch" placeholder="Search name, MRN, FIN or phone">
+            <label class="sr-only" for="listEnc">Encounter type</label>
+            <select id="listEnc"><option value="">All encounter types</option></select>
+            <span class="hint" id="listMeta"></span>
+          </div>
+          <div id="listHost"></div>
+        </div>
+      </section>
+
+      <!-- Patient summary -->
+      <section class="view hidden" id="vSummary" aria-labelledby="sumTitle">
+        <div class="view-head"><h2 id="sumTitle">Patient Summary</h2>
+          <button class="btn" data-go="list">Back to patient list</button>
+          <button class="btn danger" id="sumDelete">Delete patient</button></div>
+        <div id="sumBanner"></div>
+        <div class="view-body" id="sumBody"></div>
+      </section>
+    </main>
+  </div>
+  <footer class="statusbar"><span id="sbMsg">Ready</span><span id="sbUser"></span><span id="sbClock"></span></footer>
+</div>
+
+<div id="modalHost"></div>
+<div class="toast hidden" id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== Reference data ===================== */
+const ROLES = ["Registration Clerk","Admitting Nurse","Patient Access Supervisor","Physician","Health Information Management","System Administrator"];
+const FACILITIES = ["Sunrise Medical Centre – Bengaluru","Sunrise Medical Centre – Mysuru","Sunrise Heart Institute – Chennai","Sunrise Children's Hospital – Hyderabad","Sunrise Community Hospital – Mangaluru"];
+const STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
+const COUNTRIES = ["India","Bangladesh","Bhutan","Nepal","Sri Lanka","Maldives","United Arab Emirates","Saudi Arabia","Qatar","Oman","Singapore","Malaysia","United Kingdom","United States","Canada","Australia","Germany","France","Other"];
+const PHYSICIANS = ["Dr. Ananya Rao – General Medicine","Dr. Vikram Menon – Cardiology","Dr. Farah Siddiqui – General Surgery","Dr. Rohan Iyer – Orthopaedics","Dr. Kavitha Reddy – Obstetrics & Gynaecology","Dr. Arjun Nair – Paediatrics","Dr. Meera Kulkarni – Neurology","Dr. Sanjay Gupta – Pulmonology","Dr. Priya Bhat – Nephrology","Dr. Thomas Varghese – Emergency Medicine"];
+const ID_TYPES = ["Aadhaar","Passport","Driving Licence","Voter ID","PAN","Other"];
+const ENC_TYPES = ["Inpatient","Observation","Emergency","Day Care","Outpatient","Newborn"];
+const MAX_BYTES = 5 * 1024 * 1024;
+const OK_MIME = {"image/jpeg":"jpg","image/png":"png","image/webp":"webp","application/pdf":"pdf"};
+const OK_EXT = {jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",pdf:"application/pdf"};
+
+/* ===================== Form schema ===================== */
+const S = (id,label,options,extra) => Object.assign({id,label,type:"select",options},extra||{});
+const T = (id,label,extra) => Object.assign({id,label,type:"text"},extra||{});
+const TABS = [
+  {id:"patient", label:"Patient", sections:[
+    {title:"Patient name", fields:[
+      S("prefix","Prefix",["","Mr.","Mrs.","Ms.","Miss","Master","Baby of","Dr."]),
+      T("lastName","Last name",{required:true}),
+      T("firstName","First name",{required:true}),
+      T("middleName","Middle name"),
+      S("suffix","Suffix",["","Jr.","Sr.","II","III"]),
+      T("preferredName","Preferred name"),
+      T("previousName","Previous / maiden name",{span:2})
+    ]},
+    {title:"Demographics", fields:[
+      {id:"dob",label:"Date of birth",type:"date",required:true},
+      {id:"age",label:"Age",type:"computed"},
+      S("sex","Birth sex",["","Male","Female","Intersex","Unknown"],{required:true}),
+      S("genderIdentity","Gender identity",["","Man","Woman","Transgender man","Transgender woman","Non-binary","Other","Declined to answer"]),
+      S("maritalStatus","Marital status",["","Single","Married","Divorced","Separated","Widowed","Unknown"]),
+      S("religion","Religion",["","Hindu","Muslim","Christian","Sikh","Buddhist","Jain","Parsi / Zoroastrian","Jewish","No religion","Other","Declined to answer"]),
+      S("language","Preferred language",["","English","Hindi","Kannada","Tamil","Telugu","Malayalam","Marathi","Bengali","Gujarati","Urdu","Punjabi","Odia","Other"]),
+      {id:"interpreter",label:"Interpreter required",type:"checkbox"},
+      S("nationality","Nationality",["","Indian","Non-resident Indian","Overseas Citizen of India","Foreign national"]),
+      S("bloodGroup","Blood group",["","A+","A-","B+","B-","AB+","AB-","O+","O-","Unknown"]),
+      T("occupation","Occupation"),
+      T("birthPlace","Place of birth"),
+      S("confidentiality","Confidentiality",["Routine","Restricted","VIP"]),
+      S("educationLevel","Education level",["","None","Primary","Secondary","Graduate","Postgraduate","Unknown"])
+    ]}
+  ]},
+  {id:"contact", label:"Address & Contact", sections:[
+    {title:"Home address", fields:[
+      T("addr1","Address line 1",{required:true,span:2,placeholder:"House / flat no., street"}),
+      T("addr2","Address line 2",{span:2,placeholder:"Area, locality"}),
+      T("landmark","Landmark"),
+      T("city","City / town",{required:true}),
+      T("district","District"),
+      T("state","State / region",{list:"stateList"}),
+      T("pin","PIN / postal code",{placeholder:"6 digits for India"}),
+      S("country","Country",COUNTRIES)
+    ]},
+    {title:"Phone and email", fields:[
+      {id:"mobilePhone",label:"Mobile phone",type:"tel",required:true,placeholder:"+91 98xxxxxxxx"},
+      {id:"homePhone",label:"Home phone",type:"tel"},
+      {id:"workPhone",label:"Work phone",type:"tel"},
+      {id:"email",label:"Email",type:"email"},
+      S("preferredContact","Preferred contact method",["","Mobile","Home phone","Work phone","Email","SMS","WhatsApp"]),
+      {id:"smsConsent",label:"Consents to SMS reminders",type:"checkbox"}
+    ]}
+  ]},
+  {id:"encounter", label:"Encounter", sections:[
+    {title:"Visit", fields:[
+      S("facility","Facility",FACILITIES,{required:true,span:2}),
+      S("encounterType","Encounter type",[""].concat(ENC_TYPES),{required:true}),
+      S("admitType","Admit type",["","Elective","Emergency","Urgent","Newborn","Trauma","Transfer"]),
+      S("admitSource","Admit source",["","Self / home","Physician referral","Emergency department","Transfer from another hospital","Clinic","Ambulance","Court / police"]),
+      S("medicalService","Medical service",["","General Medicine","Cardiology","General Surgery","Orthopaedics","Obstetrics & Gynaecology","Paediatrics","Neurology","Pulmonology","Nephrology","Oncology","Emergency Medicine"]),
+      {id:"admitDateTime",label:"Admit date / time",type:"datetime-local"},
+      {id:"expectedDischarge",label:"Expected discharge",type:"date"},
+      T("reasonForVisit","Reason for visit",{span:4,placeholder:"Chief complaint or reason for admission"})
+    ]},
+    {title:"Location", fields:[
+      S("building","Building",["","Main Block","Tower A","Tower B","Mother & Child Block"]),
+      S("nurseUnit","Nurse unit",["","3 West – Medical","4 East – Surgical","5 North – Orthopaedics","Medical ICU","Cardiac Care Unit","Maternity Ward","Paediatric Ward","Emergency Department","Day Care Unit"]),
+      T("room","Room"),
+      T("bed","Bed"),
+      S("accommodation","Accommodation",["","General ward","Semi-private","Private","Deluxe suite","ICU"]),
+      S("isolation","Isolation",["","None","Contact","Droplet","Airborne","Protective"])
+    ]},
+    {title:"Care team", fields:[
+      S("attendingPhysician","Attending physician",[""].concat(PHYSICIANS),{required:true,span:2}),
+      S("admittingPhysician","Admitting physician",[""].concat(PHYSICIANS),{span:2}),
+      T("referringPhysician","Referring physician",{span:2}),
+      T("primaryCarePhysician","Primary care physician",{span:2})
+    ]},
+    {title:"Clinical flags", fields:[
+      T("allergies","Allergies",{span:2,placeholder:"e.g. Penicillin – rash"}),
+      {id:"nka",label:"No known allergies",type:"checkbox"},
+      S("fallRisk","Fall risk",["","Low","Moderate","High"]),
+      S("advanceDirective","Advance directive",["","None","Living will","Do not resuscitate","Health care proxy"]),
+      S("diet","Diet",["","Regular","Vegetarian","Diabetic","Low sodium","Soft","Liquid","Nil by mouth"]),
+      {id:"specialNeeds",label:"Special needs / notes",type:"textarea",span:2}
+    ]}
+  ]},
+  {id:"financial", label:"Financial & Insurance", sections:[
+    {title:"Financial", fields:[
+      S("financialClass","Financial class",["","Self-pay","Private insurance","Government scheme","Corporate","International patient"]),
+      S("guarantorRelation","Guarantor relationship",["","Self","Spouse","Parent","Child","Sibling","Employer","Other"]),
+      T("guarantorName","Guarantor name"),
+      {id:"guarantorPhone",label:"Guarantor phone",type:"tel"},
+      {id:"deposit",label:"Advance deposit (₹)",type:"number"}
+    ]},
+    {title:"Primary insurance", fields:[
+      S("payer","Payer",["","Ayushman Bharat PM-JAY","CGHS","ECHS","ESIC","State health scheme","Private health insurer","Corporate / employer","Third-party administrator (TPA)"]),
+      T("planName","Plan name"),
+      T("policyNumber","Policy number"),
+      T("memberId","Member / card ID"),
+      T("groupNumber","Group number"),
+      T("subscriberName","Subscriber name"),
+      S("subscriberRelation","Patient's relationship to subscriber",["","Self","Spouse","Child","Parent","Other"]),
+      T("preAuth","Pre-authorisation number"),
+      {id:"coverageFrom",label:"Coverage from",type:"date"},
+      {id:"coverageTo",label:"Coverage to",type:"date"}
+    ]}
+  ]},
+  {id:"nok", label:"Next of Kin", sections:[
+    {title:"Next of kin", fields:[
+      T("nokName","Name",{span:2}),
+      S("nokRelation","Relationship",["","Spouse","Father","Mother","Son","Daughter","Brother","Sister","Guardian","Friend","Other"]),
+      {id:"nokPhone",label:"Phone",type:"tel"},
+      T("nokAddress","Address",{span:3}),
+      {id:"nokSameAddress",label:"Same as patient address",type:"checkbox"}
+    ]},
+    {title:"Emergency contact", fields:[
+      T("ecName","Name",{span:2}),
+      S("ecRelation","Relationship",["","Spouse","Father","Mother","Son","Daughter","Brother","Sister","Guardian","Friend","Neighbour","Other"]),
+      {id:"ecPhone",label:"Phone",type:"tel"}
+    ]}
+  ]},
+  {id:"documents", label:"ID Documents", custom:true}
+];
+const ALL_FIELDS = [];
+TABS.forEach(t => (t.sections||[]).forEach(s => s.fields.forEach(f => { f.tab = t.id; ALL_FIELDS.push(f); })));
+const FIELD = Object.fromEntries(ALL_FIELDS.map(f => [f.id,f]));
+const REQUIRED = ALL_FIELDS.filter(f => f.required);
+
+/* ===================== Utilities ===================== */
+const $ = s => document.querySelector(s);
+const el = id => document.getElementById(id);
+const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+const fmtSize = n => n < 1024 ? n + " B" : n < 1048576 ? (n/1024).toFixed(1) + " KB" : (n/1048576).toFixed(2) + " MB";
+const pad = (n,w) => String(n).padStart(w,"0");
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(d){ if(!d) return ""; const x = typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d+"T00:00:00") : new Date(d); if(isNaN(x)) return ""; return pad(x.getDate(),2)+"-"+MONTHS[x.getMonth()]+"-"+x.getFullYear(); }
+function fmtDateTime(d){ if(!d) return ""; const x = new Date(d); if(isNaN(x)) return ""; return fmtDate(x)+" "+pad(x.getHours(),2)+":"+pad(x.getMinutes(),2); }
+function nowLocalInput(){ const d = new Date(); d.setSeconds(0,0); return d.getFullYear()+"-"+pad(d.getMonth()+1,2)+"-"+pad(d.getDate(),2)+"T"+pad(d.getHours(),2)+":"+pad(d.getMinutes(),2); }
+function ageText(dob){
+  if(!dob) return ""; const b = new Date(dob+"T00:00:00"), n = new Date(); if(isNaN(b) || b > n) return "";
+  let y = n.getFullYear()-b.getFullYear(), m = n.getMonth()-b.getMonth(), d = n.getDate()-b.getDate();
+  if(d < 0){ m--; d += new Date(n.getFullYear(), n.getMonth(), 0).getDate(); }
+  if(m < 0){ y--; m += 12; }
+  if(y >= 2) return y + " Years"; if(y === 1 || m >= 1) return (y*12+m) + " Months"; return d + " Days";
+}
+function patientName(p){ const d = p.data; return (d.lastName||"").toUpperCase() + ", " + (d.firstName||"") + (d.middleName ? " " + d.middleName : ""); }
+function docLabel(d){ return d.idType === "Other" && d.otherType ? "Other – " + d.otherType : d.idType; }
+function bufToDataURL(buf, mime){ return new Promise((res,rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(new Blob([buf],{type:mime})); }); }
+const ICON = {
+  clip:'<svg class="clip" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 4.5 5.6 9.4a1.4 1.4 0 0 0 2 2l5.2-5.2a2.8 2.8 0 0 0-4-4L3.4 7.6a4.2 4.2 0 0 0 6 6l4.3-4.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  pdf:'<svg class="pdf-ico" viewBox="0 0 46 56" aria-hidden="true"><path d="M2 2h30l12 12v40H2z" fill="#fff" stroke="currentColor" stroke-width="2"/><path d="M32 2v12h12" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="30" width="34" height="14" fill="currentColor"/><text x="23" y="41" font-size="10" font-family="Tahoma,sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">PDF</text></svg>',
+  warn:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 30 28H2z" fill="#f2c230" stroke="#8a6d00"/><path d="M16 12v8M16 23v2" stroke="#3a2d00" stroke-width="2.6"/></svg>',
+  q:'<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#1d5b9e"/><text x="16" y="22" font-size="17" font-family="Tahoma,sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">?</text></svg>'
+};
+
+/* ===================== Supabase connection =====================
+   Paste your project URL and anon (public) key here.
+   Supabase Dashboard > Project Settings > API (or Data API / API Keys).            */
+const SUPABASE_URL = "https://snvioxkjungpvjpjnpav.supabase.co";        // e.g. https://abcdefghijkl.supabase.co
+const SUPABASE_ANON_KEY = "sb_publishable_1mbGS3nFWf7f9EdiiEHMsw_aecH5MbR";       // the anon / publishable key, never the service_role key
+/* ================================================================ */
+const API = SUPABASE_URL.replace(/\/+$/, "") + "/functions/v1/patients";
+const CONFIGURED = /^https:\/\/.+/.test(SUPABASE_URL) && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.startsWith("[");
+
+class ApiError extends Error { constructor(status, message, details){ super(message); this.status = status; this.details = details || []; } }
+async function api(method, query, body){
+  let res;
+  try {
+    res = await fetch(API + (query ? "?" + new URLSearchParams(query) : ""), {
+      method, body,
+      headers: { "Authorization": "Bearer " + SUPABASE_ANON_KEY, "apikey": SUPABASE_ANON_KEY },
+    });
+  } catch(e){ throw new ApiError(0, "Can't reach the patient service. Check your connection and the Supabase URL."); }
+  let json = null; try { json = await res.json(); } catch(e){}
+  if(!res.ok) throw new ApiError(res.status, (json && (json.error || json.message || json.msg)) || ("Request failed (" + res.status + ")"), json && json.details);
+  return json;
+}
+async function loadPatients(){ return (await api("GET")).patients || []; }
+async function loadPatientDetail(pid){ return api("GET", {id: pid}); }
+async function createPatient(data, docs){
+  const fd = new FormData();
+  const payload = Object.assign({}, data, {
+    createdBy: {user: session.user, role: session.role, facility: session.facility, source: "portal"},
+    documents: docs.map((s, i) => ({ idType: s.idType, otherType: s.otherType, idNumber: s.idNumber,
+      issuingCountry: s.issuingCountry, issuingState: s.issuingState, file: "file" + i })),
+  });
+  fd.append("data", JSON.stringify(payload));
+  docs.forEach((s, i) => fd.append("file" + i, new Blob([s.buffer], {type: s.mimeType}), s.fileName));
+  return api("POST", null, fd);
+}
+async function removePatient(pid){ return api("DELETE", {id: pid}); }
+
+/* Remote documents carry a short-lived signed URL; fetch the bytes on demand and cache them. */
+async function ensureBuffer(doc, retried){
+  if(doc.buffer) return doc.buffer;
+  if(!doc.url) throw new Error("No file link");
+  const res = await fetch(doc.url);
+  if(!res.ok){
+    if(!retried && doc.patientId){ // link probably expired: get fresh links and try once more
+      const fresh = await loadPatientDetail(doc.patientId);
+      const m = (fresh.documents || []).find(x => x.id === doc.id);
+      if(m){ doc.url = m.url; return ensureBuffer(doc, true); }
+    }
+    throw new Error("File download failed (" + res.status + ")");
+  }
+  doc.buffer = await res.arrayBuffer();
+  return doc.buffer;
+}
+async function downloadDoc(doc){
+  try { const buf = await ensureBuffer(doc); await downloadFile(doc.fileName, buf, doc.mimeType); }
+  catch(e){ console.error(e); toast("The document couldn't be downloaded. Try again.", true); }
+}
+
+/* ===================== Session ===================== */
+let session = null;
+const SKEY = "pas_session";
+function readSession(){ try { const s = JSON.parse(sessionStorage.getItem(SKEY)||"null"); return s && s.user && s.role && s.facility ? s : null; } catch(e){ return null; } }
+function writeSession(s){ try { s ? sessionStorage.setItem(SKEY, JSON.stringify(s)) : sessionStorage.removeItem(SKEY); } catch(e){} }
+
+/* ===================== Generic UI ===================== */
+let toastTimer;
+function toast(msg, bad){ const t = el("toast"); t.textContent = msg; t.className = "toast" + (bad ? " bad" : ""); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add("hidden"), 3800); el("sbMsg").textContent = msg; }
+function confirmBox({title, message, ok="OK", cancel="Cancel", danger=false, icon="q"}){
+  return new Promise(resolve => {
+    const host = el("modalHost"); const prev = document.activeElement;
+    host.innerHTML = `<div class="modal-back"><div class="win modal" role="alertdialog" aria-modal="true" aria-labelledby="mdT" aria-describedby="mdB">
+      <div class="win-title"><span id="mdT">${esc(title)}</span></div>
+      <div class="body">${ICON[icon]}<div id="mdB">${message}</div></div>
+      <div class="foot"><button class="btn ${danger?"danger":"primary"}" data-r="1">${esc(ok)}</button><button class="btn" data-r="0">${esc(cancel)}</button></div></div></div>`;
+    const close = v => { host.innerHTML = ""; document.removeEventListener("keydown", onKey); if(prev && prev.focus) prev.focus(); resolve(v); };
+    const onKey = e => { if(e.key === "Escape") close(false); };
+    document.addEventListener("keydown", onKey);
+    host.querySelectorAll("[data-r]").forEach(b => b.addEventListener("click", () => close(b.dataset.r === "1")));
+    host.querySelector('[data-r="0"]').focus();
+  });
+}
+
+/* Downloads: platform capability when framed in a viewer, plain link otherwise */
+const dlCap = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+async function downloadFile(name, buf, mime){
+  let fname = name || "document";
+  const ext = (fname.split(".").pop() || "").toLowerCase();
+  if(!OK_EXT[ext]) fname += "." + (OK_MIME[mime] || "pdf");
+  const blob = new Blob([buf], {type:mime});
+  const cap = window.claude ? await dlCap : null;
+  if(cap){
+    try { await cap.save({filename:fname, data:blob}); toast("Downloaded " + fname); }
+    catch(e){ const c = e && e.code; toast(c === "declined" ? "Download cancelled." : c === "rate_limited" ? "A download prompt is already open." : "Download is not available here.", c !== "declined"); }
+    return;
+  }
+  const url = URL.createObjectURL(blob); const a = document.createElement("a");
+  a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* PDF rendering via pdf.js (loaded on first use) */
+let pdfjsP = null;
+function loadScript(src){ return new Promise((res,rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("load failed")); document.head.appendChild(s); }); }
+function ensurePdfJs(){
+  if(!pdfjsP){
+    const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+    pdfjsP = loadScript(base + "pdf.min.js").then(() => loadScript(base + "pdf.worker.min.js")).then(() => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + "pdf.worker.min.js"; return window.pdfjsLib;
+    }).catch(e => { pdfjsP = null; throw e; });
+  }
+  return pdfjsP;
+}
+async function renderPdfInto(container, buf, {maxPages=50, width=860, firstOnly=false}={}){
+  const lib = await ensurePdfJs();
+  const pdf = await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
+  const count = firstOnly ? 1 : Math.min(pdf.numPages, maxPages);
+  for(let i = 1; i <= count; i++){
+    const page = await pdf.getPage(i);
+    const v1 = page.getViewport({scale:1});
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const scale = (width / v1.width) * ratio;
+    const vp = page.getViewport({scale});
+    const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height; c.style.width = (vp.width/ratio) + "px";
+    c.setAttribute("aria-label", "Page " + i + " of " + pdf.numPages);
+    container.appendChild(c);
+    await page.render({canvasContext:c.getContext("2d"), viewport:vp}).promise;
+  }
+  return pdf.numPages;
+}
+
+/* Document viewer modal: images shown directly, PDFs in a paged viewer */
+const isPdf = d => d.mimeType === "application/pdf";
+const viewLabel = d => isPdf(d) ? "View PDF" : "View image";
+function withTimeout(p, ms, msg){ return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]); }
+
+async function openViewer(doc, allowDownload){
+  const host = el("modalHost"); const prev = document.activeElement;
+  const pdf = isPdf(doc);
+  host.innerHTML = `<div class="modal-back"><div class="win viewer" role="dialog" aria-modal="true" aria-labelledby="vwT">
+    <div class="win-title"><span id="vwT">${esc(docLabel(doc))} – ${esc(doc.idNumber)}</span><button class="x" aria-label="Close viewer" data-close>×</button></div>
+    <div class="vtool">
+      <span class="vinfo">${pdf ? "PDF" : "Image"}: ${esc(doc.fileName)} (${fmtSize(doc.size)})</span>
+      <span class="pdfnav hidden" id="pdfNav">
+        <button class="btn small" id="pgPrev" aria-label="Previous page">‹ Prev</button>
+        <label class="pgbox">Page <input type="number" id="pgNum" min="1" value="1" aria-label="Page number"> of <span id="pgCount">–</span></label>
+        <button class="btn small" id="pgNext" aria-label="Next page">Next ›</button>
+        <span class="vsep"></span>
+        <button class="btn small" id="zmOut" aria-label="Zoom out">−</button>
+        <span id="zmVal" class="zm">100%</span>
+        <button class="btn small" id="zmIn" aria-label="Zoom in">+</button>
+        <button class="btn small" id="zmFit">Fit width</button>
+        <span class="vsep"></span>
+      </span>
+      <button class="btn small hidden" id="vNewTab">Open in new tab</button>
+      ${allowDownload ? '<button class="btn small" data-dl>Download</button>' : ""}
+      <button class="btn small" data-close>Close</button></div>
+    <div class="vbody" id="vBody"><div class="vmsg">Loading ${pdf ? "PDF" : "image"}…</div></div></div></div>`;
+  let blobUrl = null, renderTask = null;
+  const close = () => {
+    if(renderTask) try { renderTask.cancel(); } catch(_){}
+    host.innerHTML = ""; document.removeEventListener("keydown", onKey);
+    if(blobUrl) setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    if(prev && prev.focus) prev.focus();
+  };
+  let onPdfKey = null;
+  const onKey = e => { if(e.key === "Escape") close(); else if(onPdfKey) onPdfKey(e); };
+  document.addEventListener("keydown", onKey);
+  host.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", close));
+  const dl = host.querySelector("[data-dl]"); if(dl) dl.addEventListener("click", () => downloadDoc(doc));
+  host.querySelector(".vtool [data-close]").focus();
+  const body = el("vBody");
+
+  let buffer;
+  try { buffer = await ensureBuffer(doc); }
+  catch(e){ if(body.isConnected) body.innerHTML = '<div class="vmsg">The document couldn\'t be loaded. Close the viewer and try again.</div>'; return; }
+  if(!body.isConnected) return;
+
+  blobUrl = URL.createObjectURL(new Blob([buffer], {type: doc.mimeType}));
+  const newTab = el("vNewTab"); newTab.classList.remove("hidden");
+  newTab.addEventListener("click", () => { const w = window.open(blobUrl, "_blank", "noopener"); if(!w) toast("Your browser blocked the new tab. Allow pop-ups for this site or use Download.", true); });
+
+  if(!pdf){
+    try {
+      const url = await bufToDataURL(buffer, doc.mimeType);
+      body.innerHTML = ""; const img = new Image(); img.alt = docLabel(doc) + " " + doc.idNumber; img.src = url; body.appendChild(img);
+    } catch(e){ body.innerHTML = '<div class="vmsg">This image couldn\'t be displayed. Use Download to open it.</div>'; }
+    return;
+  }
+
+  /* ---- PDF: paged viewer with pdf.js; browser's own viewer as fallback ---- */
+  function nativePdf(){
+    if(!body.isConnected) return;
+    el("pdfNav").classList.add("hidden");
+    body.innerHTML = "";
+    const fr = document.createElement("iframe"); fr.title = doc.fileName; fr.src = blobUrl; body.appendChild(fr);
+    const m = document.createElement("div"); m.className = "vmsg"; m.style.padding = "4px";
+    m.textContent = "Showing the PDF in your browser's viewer. If it stays blank, use Open in new tab or Download.";
+    body.appendChild(m);
+  }
+  let pdfDoc;
+  try {
+    const lib = await withTimeout(ensurePdfJs(), 15000, "PDF viewer took too long to load");
+    pdfDoc = await lib.getDocument({data: new Uint8Array(buffer.slice(0))}).promise;
+  } catch(e){
+    console.warn("pdf.js unavailable, using the browser's PDF viewer", e);
+    nativePdf(); return;
+  }
+  if(!body.isConnected) return;
+
+  const nav = el("pdfNav"); nav.classList.remove("hidden");
+  const total = pdfDoc.numPages;
+  el("pgCount").textContent = total; el("pgNum").max = total;
+  body.innerHTML = '<div class="pdfpage" id="pdfPage"></div>';
+  const pageHost = el("pdfPage");
+  let page = 1, zoom = null; // zoom null = fit width
+
+  async function render(){
+    el("pgNum").value = page;
+    el("pgPrev").disabled = page <= 1; el("pgNext").disabled = page >= total;
+    const pg = await pdfDoc.getPage(page);
+    const base = pg.getViewport({scale: 1});
+    const fit = Math.max(0.2, (body.clientWidth - 32) / base.width);
+    const scale = zoom == null ? fit : zoom;
+    el("zmVal").textContent = Math.round(scale * 100) + "%";
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const vp = pg.getViewport({scale: scale * ratio});
+    const c = document.createElement("canvas");
+    c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    c.style.width = Math.floor(vp.width / ratio) + "px"; c.style.maxWidth = "none";
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", "Page " + page + " of " + total);
+    if(renderTask) try { renderTask.cancel(); } catch(_){}
+    renderTask = pg.render({canvasContext: c.getContext("2d"), viewport: vp});
+    try { await renderTask.promise; } catch(e){ if(e && e.name === "RenderingCancelledException") return; throw e; }
+    if(!pageHost.isConnected) return;
+    pageHost.replaceChildren(c);
+    body.scrollTop = 0;
+  }
+  const goPage = n => { const v = Math.min(total, Math.max(1, n | 0)); if(v !== page){ page = v; render(); } else el("pgNum").value = page; };
+  const setZoom = z => { zoom = Math.min(4, Math.max(0.25, z)); render(); };
+  const curScale = () => parseInt(el("zmVal").textContent, 10) / 100 || 1;
+  el("pgPrev").addEventListener("click", () => goPage(page - 1));
+  el("pgNext").addEventListener("click", () => goPage(page + 1));
+  el("pgNum").addEventListener("change", () => goPage(parseInt(el("pgNum").value, 10)));
+  el("zmIn").addEventListener("click", () => setZoom(curScale() + 0.25));
+  el("zmOut").addEventListener("click", () => setZoom(curScale() - 0.25));
+  el("zmFit").addEventListener("click", () => { zoom = null; render(); });
+  onPdfKey = e => {
+    if(e.target && e.target.id === "pgNum") return;
+    if(e.key === "ArrowRight" || e.key === "PageDown"){ e.preventDefault(); goPage(page + 1); }
+    if(e.key === "ArrowLeft" || e.key === "PageUp"){ e.preventDefault(); goPage(page - 1); }
+  };
+  try { await render(); }
+  catch(e){ console.warn("pdf.js could not render this PDF, using the browser's viewer", e); nativePdf(); }
+}
+
+/* ===================== Registration form ===================== */
+let staged = [];     // documents waiting to be saved with the admission
+let pending = null;  // file chosen in the upload box, not yet added
+let dirty = false;
+
+function fieldHTML(f){
+  const id = "f_" + f.id, span = f.span ? " span-" + f.span : "";
+  const req = f.required ? '<span class="req" aria-hidden="true">*</span>' : "";
+  const reqA = f.required ? ' aria-required="true"' : "";
+  const cls = f.required ? ' class="is-req"' : "";
+  if(f.type === "checkbox") return `<div class="fld check${span}"><label for="${id}">${esc(f.label)}</label><input type="checkbox" id="${id}"></div>`;
+  let input;
+  if(f.type === "select") input = `<select id="${id}"${cls}${reqA}>${f.options.map(o => `<option value="${esc(o)}">${o ? esc(o) : "&nbsp;"}</option>`).join("")}</select>`;
+  else if(f.type === "textarea") input = `<textarea id="${id}"${cls}${reqA}></textarea>`;
+  else if(f.type === "computed") input = `<input type="text" id="${id}" readonly tabindex="-1" placeholder="From date of birth">`;
+  else input = `<input type="${f.type}" id="${id}"${cls}${reqA}${f.placeholder ? ` placeholder="${esc(f.placeholder)}"` : ""}${f.list ? ` list="${f.list}"` : ""}${f.type==="number" ? ' min="0" step="1"' : ""} autocomplete="off">`;
+  return `<div class="fld${span}"><label for="${id}">${esc(f.label)}${req}</label>${input}</div>`;
+}
+function docsPanelHTML(){
+  return `<div class="section"><h3>Add identification document</h3>
+    <div class="doc-add">
+      <div class="doc-fields">
+        <div class="fld"><label for="dType">ID type</label><select id="dType"><option value=""></option>${ID_TYPES.map(t => `<option>${t}</option>`).join("")}</select></div>
+        <div class="fld hidden" id="dOtherWrap"><label for="dOther">Document name</label><input type="text" id="dOther" placeholder="e.g. Ration card"></div>
+        <div class="fld"><label for="dNumber">ID number</label><input type="text" id="dNumber" autocomplete="off"><span class="hint" id="dNumHint"></span></div>
+        <div class="fld"><label for="dCountry">Issuing country</label><select id="dCountry">${COUNTRIES.map(c => `<option>${c}</option>`).join("")}</select></div>
+        <div class="fld"><label for="dState">Issuing state / authority</label><input type="text" id="dState" list="stateList" placeholder="e.g. Karnataka, UIDAI"></div>
+      </div>
+      <div>
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="dzHint">
+          <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M14 18V5M8.5 10.5 14 5l5.5 5.5M4 18v5h20v-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <div>Drag a file here or <span style="color:var(--accent);text-decoration:underline">browse</span></div>
+          <div class="hint" id="dzHint">JPG, PNG, WebP or PDF, up to 5 MB</div>
+        </div>
+        <input type="file" id="fileInput" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf">
+        <div id="previewHost"></div>
+      </div>
+      <div class="doc-actions"><button class="btn primary" id="addDocBtn">Add document</button><span class="doc-err" id="docErr" role="alert"></span></div>
+    </div></div>
+    <div class="section"><h3>Documents to save with this admission (<span id="stagedCount">0</span>)</h3><div id="stagedHost"></div></div>`;
+}
+function buildForm(){
+  el("tabStrip").innerHTML = TABS.map((t,i) => `<button class="tab" role="tab" id="tab_${t.id}" aria-controls="panel_${t.id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}" data-tab="${t.id}">${esc(t.label)}${t.id==="documents" ? ' <span class="count" id="docTabCount">0</span>' : '<span class="flag hidden"></span>'}</button>`).join("");
+  el("tabPanels").innerHTML = TABS.map((t,i) => `<div class="tabpanel${i?" hidden":""}" role="tabpanel" id="panel_${t.id}" aria-labelledby="tab_${t.id}">
+    ${t.custom ? docsPanelHTML() : t.sections.map(s => `<div class="section"><h3>${esc(s.title)}</h3><div class="grid">${s.fields.map(fieldHTML).join("")}</div></div>`).join("")}</div>`).join("")
+    + `<datalist id="stateList">${STATES.map(s => `<option value="${esc(s)}">`).join("")}</datalist>`;
+  el("reqCount").textContent = REQUIRED.length;
+  el("tabStrip").addEventListener("click", e => { const b = e.target.closest(".tab"); if(b) selectTab(b.dataset.tab); });
+  el("tabStrip").addEventListener("keydown", e => {
+    if(e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const ids = TABS.map(t => t.id), cur = ids.indexOf(document.activeElement.dataset.tab); if(cur < 0) return;
+    const nx = ids[(cur + (e.key === "ArrowRight" ? 1 : ids.length - 1)) % ids.length]; selectTab(nx); el("tab_"+nx).focus();
+  });
+  const onEdit = e => { dirty = true; if(e.target.classList.contains("is-invalid") && hasValue(e.target)) clearFieldError(e.target.id.slice(2)); };
+  el("tabPanels").addEventListener("input", onEdit);
+  el("tabPanels").addEventListener("change", onEdit);
+  el("f_dob").addEventListener("input", () => el("f_age").value = ageText(el("f_dob").value));
+  el("f_dob").max = new Date().toISOString().slice(0,10);
+  el("f_nka").addEventListener("change", () => { const a = el("f_allergies"); a.disabled = el("f_nka").checked; if(a.disabled) a.value = ""; });
+  el("f_nokSameAddress").addEventListener("change", () => {
+    if(!el("f_nokSameAddress").checked) return;
+    el("f_nokAddress").value = ["addr1","addr2","city","state","pin"].map(k => el("f_"+k).value.trim()).filter(Boolean).join(", ");
+  });
+  wireDocs();
+}
+function clearFieldError(fid){
+  const i = el("f_"+fid); if(i) i.classList.remove("is-invalid");
+  el("errBox").querySelectorAll('li[data-li="'+fid+'"]').forEach(li => li.remove());
+  if(!el("errBox").querySelector("li")) el("errBox").classList.add("hidden");
+  else { const n = el("errBox").querySelectorAll("li").length; const b = el("errBox").querySelector("b"); if(b) b.textContent = "The admission can't be completed until these are fixed (" + n + "):"; }
+  refreshFlags();
+}
+function hasValue(inp){ return inp.type === "checkbox" ? inp.checked : String(inp.value).trim() !== ""; }
+function selectTab(id){
+  TABS.forEach(t => { const on = t.id === id; const b = el("tab_"+t.id); b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; el("panel_"+t.id).classList.toggle("hidden", !on); });
+  el("regBody").scrollTop = 0;
+}
+function resetForm(){
+  ALL_FIELDS.forEach(f => { const i = el("f_"+f.id); if(!i) return; if(f.type === "checkbox") i.checked = false; else i.value = ""; i.classList.remove("is-invalid"); i.disabled = false; });
+  el("f_facility").value = session ? session.facility : FACILITIES[0];
+  el("f_country").value = "India";
+  el("f_confidentiality").value = "Routine";
+  el("f_admitDateTime").value = nowLocalInput();
+  staged = []; clearPending(); renderStaged();
+  ["dType","dNumber","dOther","dState"].forEach(k => el(k).value = ""); el("dCountry").value = "India"; onTypeChange();
+  el("docErr").textContent = "";
+  el("errBox").classList.add("hidden"); refreshFlags();
+  selectTab("patient"); dirty = false;
+}
+function collect(){
+  const d = {};
+  ALL_FIELDS.forEach(f => { if(f.type === "computed") return; const i = el("f_"+f.id); d[f.id] = f.type === "checkbox" ? i.checked : i.value.trim(); });
+  return d;
+}
+function validate(d){
+  const errs = [];
+  REQUIRED.forEach(f => { if(!d[f.id]) errs.push({f, msg: f.label + " is required"}); });
+  const today = new Date(); today.setHours(23,59,59,999);
+  if(d.dob && new Date(d.dob+"T00:00:00") > today) errs.push({f:FIELD.dob, msg:"Date of birth can't be in the future"});
+  if(d.mobilePhone && d.mobilePhone.replace(/\D/g,"").length < 10) errs.push({f:FIELD.mobilePhone, msg:"Mobile phone needs at least 10 digits"});
+  if(d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) errs.push({f:FIELD.email, msg:"Email address is not valid"});
+  if(d.pin && d.country === "India" && !/^\d{6}$/.test(d.pin)) errs.push({f:FIELD.pin, msg:"Indian PIN code must be 6 digits"});
+  if(d.coverageFrom && d.coverageTo && d.coverageTo < d.coverageFrom) errs.push({f:FIELD.coverageTo, msg:"Coverage end date is before the start date"});
+  return errs;
+}
+function refreshFlags(){
+  TABS.forEach(t => { if(t.custom) return; const bad = el("panel_"+t.id).querySelector(".is-invalid"); el("tab_"+t.id).querySelector(".flag").classList.toggle("hidden", !bad); });
+}
+function showErrors(errs){
+  ALL_FIELDS.forEach(f => { const i = el("f_"+f.id); if(i) i.classList.remove("is-invalid"); });
+  errs.forEach(e => el("f_"+e.f.id).classList.add("is-invalid"));
+  refreshFlags();
+  const box = el("errBox");
+  box.innerHTML = `<b>The admission can't be completed until these are fixed (${errs.length}):</b><ul>${errs.map(e => `<li data-li="${e.f.id}"><button class="linkbtn" data-f="${e.f.id}">${esc(e.msg)}</button> <span class="hint">(${esc(TABS.find(t=>t.id===e.f.tab).label)} tab)</span></li>`).join("")}</ul>`;
+  box.classList.remove("hidden");
+  box.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => { const f = FIELD[b.dataset.f]; selectTab(f.tab); el("f_"+f.id).focus(); }));
+  selectTab(errs[0].f.tab); el("regBody").scrollTop = 0;
+}
+
+async function completeAdmission(){
+  if(!CONFIGURED){ toast("Add your Supabase URL and anon key to this page before admitting patients.", true); return; }
+  const d = collect();
+  const errs = validate(d);
+  if(errs.length){ showErrors(errs); toast("Fix " + errs.length + " field" + (errs.length>1?"s":"") + " to complete the admission.", true); return; }
+  el("errBox").classList.add("hidden");
+  if(pending){
+    const go = await confirmBox({title:"Document not added", icon:"warn", ok:"Complete without it", cancel:"Go back",
+      message:`<p style="margin:0">The file <b>${esc(pending.name)}</b> is selected but hasn't been added to the document list. It won't be saved.</p>`});
+    if(!go){ selectTab("documents"); return; }
+  }
+  const btns = [el("completeBtn"), el("tbComplete")]; btns.forEach(b => b.disabled = true);
+  try {
+    el("sbMsg").textContent = "Saving admission…";
+    const res = await createPatient(d, staged);
+    const patient = res.patient;
+    patients = patients.filter(x => x.id !== patient.id).concat(patient);
+    updateCounts();
+    resetForm();
+    const n = (res.documents || []).length;
+    toast("Admitted " + patientName(patient) + " (MRN " + patient.mrn + ")" + (n ? " with " + n + " document" + (n>1?"s":"") : ""));
+    openSummary(patient.id, res);
+  } catch(e){
+    console.error(e);
+    if(e.status === 400 && e.details && e.details.length){
+      el("errBox").innerHTML = "<b>The server rejected this admission:</b><ul>" + e.details.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+      el("errBox").classList.remove("hidden"); el("regBody").scrollTop = 0;
+    }
+    toast("The admission couldn't be saved: " + e.message, true);
+  } finally { btns.forEach(b => b.disabled = false); }
+}
+
+/* ---------- Document staging ---------- */
+const NUM_HINT = {"Aadhaar":"12 digits","Passport":"e.g. A1234567","Driving Licence":"e.g. KA01 20190012345","Voter ID":"e.g. ABC1234567","PAN":"e.g. ABCDE1234F","Other":""};
+function onTypeChange(){
+  const t = el("dType").value;
+  el("dOtherWrap").classList.toggle("hidden", t !== "Other");
+  el("dNumHint").textContent = NUM_HINT[t] || "";
+}
+function wireDocs(){
+  el("dType").addEventListener("change", onTypeChange);
+  const dz = el("dropzone"), fi = el("fileInput");
+  dz.addEventListener("click", () => fi.click());
+  dz.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); fi.click(); } });
+  fi.addEventListener("change", () => { if(fi.files[0]) takeFile(fi.files[0]); fi.value = ""; });
+  ["dragenter","dragover"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("over"); }));
+  dz.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if(f) takeFile(f); });
+  // stop the browser from opening files dropped outside the box
+  window.addEventListener("dragover", e => e.preventDefault());
+  window.addEventListener("drop", e => e.preventDefault());
+  el("addDocBtn").addEventListener("click", addDoc);
+}
+async function takeFile(file){
+  const err = el("docErr"); err.textContent = "";
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  const mime = OK_MIME[file.type] ? file.type : OK_EXT[ext];
+  if(!mime){ err.textContent = "“" + file.name + "” isn't a supported file. Use JPG, PNG, WebP or PDF."; return; }
+  if(file.size > MAX_BYTES){ err.textContent = "“" + file.name + "” is " + fmtSize(file.size) + ". Files must be 5 MB or smaller."; return; }
+  if(file.size === 0){ err.textContent = "“" + file.name + "” is empty."; return; }
+  let buffer;
+  try { buffer = await file.arrayBuffer(); } catch(e){ err.textContent = "The file couldn't be read. Try selecting it again."; return; }
+  pending = {name:file.name, size:file.size, mimeType:mime, buffer};
+  renderPreview();
+}
+function clearPending(){ pending = null; const h = el("previewHost"); if(h) h.innerHTML = ""; }
+async function renderPreview(){
+  const h = el("previewHost"); if(!pending){ h.innerHTML = ""; return; }
+  const p = pending;
+  h.innerHTML = `<div class="preview"><div class="thumb" id="pvThumb"></div><div class="meta">
+    <b>${esc(p.name)}</b><span class="hint">${p.mimeType === "application/pdf" ? "PDF document" : p.mimeType.replace("image/","").toUpperCase() + " image"}, ${fmtSize(p.size)}</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button class="btn small" id="pvOpen">${p.mimeType === "application/pdf" ? "View PDF" : "View image"}</button><button class="btn small danger" id="pvRemove">Remove file</button></div>
+    <span class="hint">Fill in the ID details, then choose Add document.</span></div></div>`;
+  el("pvRemove").addEventListener("click", clearPending);
+  el("pvOpen").addEventListener("click", () => openViewer({idType: el("dType").value || "Document", otherType: el("dOther").value, idNumber: el("dNumber").value || "not entered", fileName:p.name, size:p.size, mimeType:p.mimeType, buffer:p.buffer}, false));
+  const th = el("pvThumb");
+  if(p.mimeType.startsWith("image/")){
+    const url = await bufToDataURL(p.buffer, p.mimeType); if(pending !== p) return;
+    const img = new Image(); img.alt = "Preview of " + p.name; img.src = url; th.appendChild(img);
+  } else {
+    th.innerHTML = ICON.pdf;
+    try { const box = document.createElement("div"); await renderPdfInto(box, p.buffer, {firstOnly:true, width:118}); if(pending !== p || !th.isConnected) return; th.innerHTML = ""; th.appendChild(box.firstChild); } catch(e){ /* keep icon */ }
+  }
+}
+function addDoc(){
+  const err = el("docErr"); err.textContent = "";
+  const idType = el("dType").value, idNumber = el("dNumber").value.trim(), otherType = el("dOther").value.trim();
+  const missing = [];
+  if(!idType) missing.push("ID type");
+  if(idType === "Other" && !otherType) missing.push("document name");
+  if(!idNumber) missing.push("ID number");
+  if(!pending) missing.push("a file");
+  if(missing.length){ err.textContent = "Add " + missing.join(", ").replace(/, ([^,]*)$/, " and $1") + " first."; return; }
+  if(staged.some(s => s.idType === idType && s.idNumber.toLowerCase() === idNumber.toLowerCase() && s.fileName === pending.name)){ err.textContent = "This document is already in the list."; return; }
+  staged.push({tempId: uid(), idType, otherType: idType === "Other" ? otherType : "", idNumber, issuingCountry: el("dCountry").value, issuingState: el("dState").value.trim(),
+    fileName: pending.name, mimeType: pending.mimeType, size: pending.size, buffer: pending.buffer});
+  dirty = true;
+  clearPending(); el("dNumber").value = ""; el("dOther").value = ""; el("dType").value = ""; el("dState").value = ""; onTypeChange();
+  renderStaged();
+  toast("Document added. It will be saved when the admission is completed.");
+}
+function renderStaged(){
+  el("stagedCount").textContent = staged.length; el("docTabCount").textContent = staged.length;
+  const h = el("stagedHost");
+  if(!staged.length){ h.innerHTML = '<div class="none">No documents added. Documents are optional.</div>'; return; }
+  h.innerHTML = `<div class="tablewrap" style="border:0"><table><thead><tr><th>ID type</th><th>ID number</th><th>Issued by</th><th>File</th><th>Size</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>
+    ${staged.map(s => `<tr><td>${esc(docLabel(s))}</td><td>${esc(s.idNumber)}</td><td>${esc([s.issuingState, s.issuingCountry].filter(Boolean).join(", "))}</td><td>${esc(s.fileName)}</td><td>${fmtSize(s.size)}</td>
+      <td class="actions"><button class="btn small" data-view="${s.tempId}">${viewLabel(s)}</button> <button class="btn small danger" data-rm="${s.tempId}">Remove</button></td></tr>`).join("")}</tbody></table></div>`;
+  h.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => { staged = staged.filter(s => s.tempId !== b.dataset.rm); renderStaged(); toast("Document removed from this admission."); }));
+  h.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => openViewer(staged.find(s => s.tempId === b.dataset.view), false)));
+}
+
+/* ===================== Patient list ===================== */
+let patients = [], listLoaded = false, listError = "", refreshing = null;
+function refreshPatients(){
+  if(!CONFIGURED) return Promise.resolve();
+  if(refreshing) return refreshing;
+  el("refreshBtn").disabled = true;
+  refreshing = loadPatients().then(list => { patients = list; listLoaded = true; listError = ""; el("storeWarn").classList.add("hidden"); })
+    .catch(e => { console.error(e); listError = e.message; })
+    .finally(() => { refreshing = null; el("refreshBtn").disabled = false; updateCounts(); if(currentView === "list") renderList(); });
+  return refreshing;
+}
+function updateCounts(){ el("navCount").textContent = patients.length; }
+function renderList(){
+  const q = el("listSearch").value.trim().toLowerCase(), enc = el("listEnc").value;
+  const rows = patients.slice().sort((a,b) => b.createdAt.localeCompare(a.createdAt)).filter(p => {
+    if(enc && p.data.encounterType !== enc) return false;
+    if(!q) return true;
+    const d = p.data; return [d.lastName, d.firstName, d.middleName, p.mrn, p.fin, d.mobilePhone].join(" ").toLowerCase().includes(q);
+  });
+  el("listMeta").textContent = listError && listLoaded ? "Showing last loaded list. Refresh failed: " + listError : patients.length ? rows.length + " of " + patients.length + " patient" + (patients.length>1?"s":"") : "";
+  const host = el("listHost");
+  if(!CONFIGURED){ host.innerHTML = '<div class="empty"><p>This portal isn\'t connected to Supabase yet.</p><p class="hint">Set SUPABASE_URL and SUPABASE_ANON_KEY at the top of the page\'s script.</p></div>'; return; }
+  if(listError && !listLoaded){ host.innerHTML = `<div class="empty"><p>The patient list couldn't be loaded.</p><p class="hint">${esc(listError)}</p><button class="btn" id="listRetry">Try again</button></div>`; el("listRetry").addEventListener("click", refreshPatients); return; }
+  if(!listLoaded){ host.innerHTML = '<div class="empty"><p>Loading patients…</p></div>'; return; }
+  if(!patients.length){
+    host.innerHTML = `<div class="empty"><p>No patients admitted yet.</p><p class="hint">Patients admitted here or added through the API will appear here.</p><button class="btn primary" data-go="register">Register a patient</button></div>`;
+    host.querySelector("[data-go]").addEventListener("click", () => go("register")); return;
+  }
+  if(!rows.length){ host.innerHTML = `<div class="empty"><p>No patients match your search.</p></div>`; return; }
+  host.innerHTML = `<div class="tablewrap"><table><thead><tr><th><span class="sr-only">Documents</span></th><th>Patient name</th><th>MRN</th><th>FIN</th><th>Age / Sex</th><th>DOB</th><th>Encounter</th><th>Location</th><th>Attending</th><th>Admitted</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>
+    ${rows.map(p => { const d = p.data; return `<tr class="clickable" data-open="${p.id}">
+      <td>${p.docCount ? `<span title="${p.docCount} document${p.docCount>1?"s":""} attached">${ICON.clip}<span class="sr-only">${p.docCount} documents attached</span></span>` : ""}</td>
+      <td><span class="pname">${esc(patientName(p))}</span></td><td>${esc(p.mrn)}</td><td>${esc(p.fin)}</td>
+      <td>${esc(ageText(d.dob))} ${esc((d.sex||"").charAt(0))}</td><td>${esc(fmtDate(d.dob))}</td><td>${esc(d.encounterType)}</td>
+      <td>${esc([d.nurseUnit, d.room && "Rm " + d.room, d.bed && "Bed " + d.bed].filter(Boolean).join(", ") || d.facility)}</td>
+      <td>${esc((d.attendingPhysician||"").split(" – ")[0])}</td><td>${esc(fmtDateTime(d.admitDateTime || p.createdAt))}</td>
+      <td class="actions"><button class="btn small" data-open="${p.id}">Open</button> <button class="btn small danger" data-del="${p.id}" aria-label="Delete ${esc(patientName(p))}">Delete</button></td></tr>`; }).join("")}</tbody></table></div>`;
+  host.querySelectorAll("tr[data-open]").forEach(tr => tr.addEventListener("click", e => { if(e.target.closest("[data-del]")) return; openSummary(tr.dataset.open); }));
+  host.querySelectorAll("button[data-del]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); deletePatientFlow(b.dataset.del); }));
+}
+async function deletePatientFlow(pid){
+  const p = patients.find(x => x.id === pid); if(!p) return;
+  const n = p.docCount || 0;
+  const ok = await confirmBox({title:"Delete patient", icon:"warn", ok:"Delete patient", danger:true,
+    message:`<p style="margin:0 0 6px">Delete <b>${esc(patientName(p))}</b> (MRN ${esc(p.mrn)})?</p><p style="margin:0">This permanently removes the registration${n ? " and its " + n + " uploaded document" + (n>1?"s":"") : ""} for every user of this portal. It can't be undone.</p>`});
+  if(!ok) return;
+  try {
+    try { await removePatient(pid); } catch(e){ if(e.status !== 404) throw e; }
+    patients = patients.filter(x => x.id !== pid); updateCounts();
+    toast("Deleted " + patientName(p) + " (MRN " + p.mrn + ")");
+    if(currentView === "summary") go("list"); else renderList();
+  } catch(e){ console.error(e); toast("The patient couldn't be deleted: " + e.message, true); }
+}
+
+/* ===================== Patient summary ===================== */
+let currentId = null;
+async function openSummary(pid, preloaded){
+  let p = patients.find(x => x.id === pid);
+  currentId = pid; go("summary");
+  let detail = preloaded || null;
+  if(!p || !detail){
+    if(!p){ el("sumBanner").innerHTML = ""; el("sumBody").innerHTML = '<div class="none">Loading patient…</div>'; }
+    try { detail = await loadPatientDetail(pid); }
+    catch(e){
+      if(currentId !== pid) return;
+      if(e.status === 404){ patients = patients.filter(x => x.id !== pid); updateCounts(); toast("This patient has been deleted.", true); go("list"); return; }
+      if(!p){ el("sumBody").innerHTML = '<div class="none">The patient couldn\'t be loaded: ' + esc(e.message) + '</div>'; return; }
+    }
+    if(currentId !== pid) return;
+    if(detail){ p = detail.patient; patients = patients.filter(x => x.id !== pid).concat(p); updateCounts(); }
+  }
+  const d = p.data;
+  const allergy = d.nka ? "NKA" : (d.allergies || "Not recorded");
+  el("sumBanner").innerHTML = `<div class="banner">
+    <div><div class="bn">${esc(patientName(p))}</div><div class="kv">${esc(d.sex)}, ${esc(ageText(d.dob))}${d.bloodGroup ? ", " + esc(d.bloodGroup) : ""}</div></div>
+    <div class="kv"><span>DOB:</span>${esc(fmtDate(d.dob))}<br><span>MRN:</span>${esc(p.mrn)}<br><span>FIN:</span>${esc(p.fin)}</div>
+    <div class="kv"><span>Enc type:</span>${esc(d.encounterType)}<br><span>Location:</span>${esc([d.nurseUnit, d.room && "Rm " + d.room, d.bed && "Bed " + d.bed].filter(Boolean).join(", ") || "Unassigned")}<br><span>Attending:</span>${esc((d.attendingPhysician||"").split(" – ")[0])}</div>
+    <div class="kv"><span>Allergies:</span><span class="${d.nka ? "" : "allergy"}" style="opacity:1">${esc(allergy)}</span><br><span>Admitted:</span>${esc(fmtDateTime(d.admitDateTime || p.createdAt))}<br><span>Facility:</span>${esc(d.facility)}</div>
+  </div>`;
+  const val = (f) => { const v = d[f.id]; if(f.type === "checkbox") return v ? "Yes" : ""; if(f.type === "date") return fmtDate(v); if(f.type === "datetime-local") return fmtDateTime(v); if(f.id === "deposit" && v) return "₹ " + Number(v).toLocaleString("en-IN"); return v; };
+  const secHTML = (s, wide) => {
+    const items = s.fields.filter(f => f.type !== "computed").map(f => [f.label, val(f)]).filter(([,v]) => v);
+    if(s.title === "Demographics" && d.dob) items.splice(1, 0, ["Age", ageText(d.dob)]);
+    return `<div class="section${wide?" wide":""}"><h3>${esc(s.title)}</h3>${items.length ? `<dl class="dl">${items.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : '<div class="none">Not recorded</div>'}</div>`;
+  };
+  let html = '<div class="summary-grid">';
+  TABS.forEach(t => (t.sections||[]).forEach(s => { html += secHTML(s, ["Demographics","Visit","Clinical flags","Primary insurance"].includes(s.title)); }));
+  html += `<div class="section wide" id="docSection"><h3>Documents (${p.docCount || 0})</h3><div class="none">Loading documents…</div></div>`;
+  html += `<div class="section wide"><h3>Registration record</h3><dl class="dl"><div><dt>Registered by</dt><dd>${esc((p.createdBy||{}).user)} (${esc((p.createdBy||{}).role)})${(p.createdBy||{}).source === "api" ? " via API" : ""}</dd></div><div><dt>Registered at</dt><dd>${esc((p.createdBy||{}).facility)}</dd></div><div><dt>Completed</dt><dd>${esc(fmtDateTime(p.createdAt))}</dd></div></dl></div>`;
+  html += "</div>";
+  el("sumBody").innerHTML = html; el("sumBody").scrollTop = 0;
+  el("sumTitle").textContent = "Patient Summary – " + patientName(p);
+
+  if(!detail){
+    el("docSection").innerHTML = '<h3>Documents</h3><div class="none">Documents couldn\'t be loaded. <button class="linkbtn" id="docRetry">Try again</button></div>';
+    el("docRetry").addEventListener("click", () => openSummary(pid)); return;
+  }
+  const docs = (detail.documents || []).map(x => Object.assign(x, {patientId: pid}));
+  docs.sort((a,b) => a.uploadedAt.localeCompare(b.uploadedAt));
+  const ds = el("docSection");
+  ds.innerHTML = `<h3>Documents (${docs.length})</h3>` + (docs.length ? `<div class="tablewrap" style="border:0"><table><thead><tr><th>Type</th><th>Number</th><th>Issued by</th><th>File name</th><th>Size</th><th>Uploaded</th><th>Uploaded by</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>
+    ${docs.map(x => `<tr><td>${ICON.clip} ${esc(docLabel(x))}</td><td>${esc(x.idNumber)}</td><td>${esc([x.issuingState, x.issuingCountry].filter(Boolean).join(", "))}</td><td>${isPdf(x) ? '<span class="ftype pdf">PDF</span>' : '<span class="ftype img">IMG</span>'}${esc(x.fileName)}</td><td>${fmtSize(x.size)}</td><td>${esc(fmtDateTime(x.uploadedAt))}</td><td>${esc(x.uploadedBy)}</td>
+      <td class="actions"><button class="btn small" data-v="${x.id}">${viewLabel(x)}</button> <button class="btn small" data-d="${x.id}">Download</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="none">No identification documents were uploaded for this patient.</div>');
+  ds.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => openViewer(docs.find(x => x.id === b.dataset.v), true)));
+  ds.querySelectorAll("[data-d]").forEach(b => b.addEventListener("click", () => { downloadDoc(docs.find(y => y.id === b.dataset.d)); }));
+}
+
+/* ===================== Navigation ===================== */
+let currentView = "register";
+function go(v){
+  currentView = v;
+  el("vRegister").classList.toggle("hidden", v !== "register");
+  el("vList").classList.toggle("hidden", v !== "list");
+  el("vSummary").classList.toggle("hidden", v !== "summary");
+  document.querySelectorAll(".nav [data-go], .toolbar [data-go]").forEach(b => b.classList.toggle("active", b.dataset.go === v || (v === "summary" && b.dataset.go === "list")));
+  el("tbComplete").disabled = v !== "register";
+  if(v === "list"){ renderList(); refreshPatients(); }
+  if(v !== "summary") currentId = null;
+}
+
+/* ===================== Login / logout ===================== */
+function fillLoginLists(){
+  el("lgRole").innerHTML = '<option value="">Select a role</option>' + ROLES.map(r => `<option>${esc(r)}</option>`).join("");
+  el("lgFacility").innerHTML = '<option value="">Select a facility</option>' + FACILITIES.map(f => `<option>${esc(f)}</option>`).join("");
+}
+function enterApp(){
+  el("login").classList.add("hidden"); el("app").classList.remove("hidden");
+  el("hdUser").textContent = session.user; el("hdRole").textContent = session.role; el("hdFacility").textContent = session.facility;
+  el("sbUser").textContent = session.user + " (" + session.role + ")";
+  el("navFoot").textContent = "Signed in at " + session.facility;
+  resetForm(); go("register");
+}
+async function logout(){
+  if(dirty){
+    const ok = await confirmBox({title:"Log out", icon:"warn", ok:"Log out", cancel:"Stay", message:'<p style="margin:0">The registration in progress hasn\'t been completed. Logging out will discard it.</p>'});
+    if(!ok) return;
+  }
+  session = null; writeSession(null); dirty = false;
+  el("app").classList.add("hidden"); el("login").classList.remove("hidden");
+  el("loginForm").reset(); el("loginMsg").textContent = ""; el("lgUser").focus();
+}
+
+/* ===================== Init ===================== */
+async function init(){
+  fillLoginLists(); buildForm();
+  el("loginForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const u = el("lgUser").value.trim(), r = el("lgRole").value, f = el("lgFacility").value;
+    const miss = []; if(!u) miss.push("user"); if(!r) miss.push("role"); if(!f) miss.push("facility");
+    [["lgUser",u],["lgRole",r],["lgFacility",f]].forEach(([id,v]) => el(id).classList.toggle("is-invalid", !v));
+    if(miss.length){ el("loginMsg").textContent = "Enter " + miss.join(", ").replace(/, ([^,]*)$/, " and $1") + " to sign in."; return; }
+    session = {user:u, role:r, facility:f, at:new Date().toISOString()}; writeSession(session); enterApp();
+  });
+  ["lgUser","lgRole","lgFacility"].forEach(id => el(id).addEventListener("input", () => el(id).classList.remove("is-invalid")));
+  el("loginClear").addEventListener("click", () => { el("loginForm").reset(); el("loginMsg").textContent = ""; ["lgUser","lgRole","lgFacility"].forEach(id => el(id).classList.remove("is-invalid")); el("lgUser").focus(); });
+  el("logoutBtn").addEventListener("click", logout);
+  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => go(b.dataset.go)));
+  el("completeBtn").addEventListener("click", completeAdmission);
+  el("tbComplete").addEventListener("click", completeAdmission);
+  el("clearBtn").addEventListener("click", async () => { if(dirty && !(await confirmBox({title:"Clear form", icon:"warn", ok:"Clear form", message:'<p style="margin:0">Clear every field and remove any documents added to this registration?</p>'}))) return; resetForm(); toast("Form cleared."); });
+  el("cancelBtn").addEventListener("click", async () => { if(dirty && !(await confirmBox({title:"Cancel registration", icon:"warn", ok:"Discard registration", cancel:"Keep editing", message:'<p style="margin:0">Discard this registration? Nothing has been saved yet.</p>'}))) return; resetForm(); go("list"); });
+  el("sumDelete").addEventListener("click", () => currentId && deletePatientFlow(currentId));
+  el("listSearch").addEventListener("input", renderList);
+  el("listEnc").innerHTML += ENC_TYPES.map(t => `<option>${t}</option>`).join("");
+  el("listEnc").addEventListener("change", renderList);
+  window.addEventListener("beforeunload", e => { if(dirty && session){ e.preventDefault(); e.returnValue = ""; } });
+  const tick = () => { el("sbClock").textContent = fmtDateTime(new Date()); }; tick(); setInterval(tick, 30000);
+
+  el("refreshBtn").addEventListener("click", refreshPatients);
+  window.addEventListener("focus", () => { if(session && currentView === "list") refreshPatients(); });
+  if(!CONFIGURED){
+    el("storeWarn").textContent = "Not connected to Supabase. Set SUPABASE_URL and SUPABASE_ANON_KEY at the top of this page's script, then reload.";
+    el("storeWarn").classList.remove("hidden");
+  } else {
+    refreshPatients().then(() => { if(listError && !listLoaded){ el("storeWarn").textContent = "Can't load patients from Supabase: " + listError; el("storeWarn").classList.remove("hidden"); } });
+  }
+  updateCounts();
+  session = readSession();
+  if(session) enterApp(); else el("lgUser").focus();
+}
+init();
+})();
+</script>
+</body>
+</html>
