@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patient Access Manager – Registration &amp; Admission</title>
+<style>
+:root{
+  --bg:#d5dfe9; --panel:#eef3f8; --surface:#ffffff; --surface-alt:#f5f8fb;
+  --border:#9fb3c8; --border-soft:#c9d6e3; --text:#17222e; --muted:#566778;
+  --accent:#1f5f9e; --accent-ink:#ffffff; --accent-soft:#dbe9f7;
+  --title-a:#2f6394; --title-b:#18406a; --title-ink:#ffffff;
+  --hdr-a:#e3edf7; --hdr-b:#c7d8ea; --hdr-ink:#14365c;
+  --tool-a:#f7f9fb; --tool-b:#dde6ef;
+  --req:#fff6c4; --req-border:#c9b55a; --danger:#b42318; --danger-soft:#fde8e6;
+  --ok:#22744a; --row-hover:#e2eefb; --banner:#e8f0f8; --focus:#f59e0b;
+  --shadow:0 6px 24px rgba(10,30,60,.25);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151c25; --panel:#1c2531; --surface:#232e3b; --surface-alt:#26323f;
+    --border:#465a70; --border-soft:#34455a; --text:#e3e9f0; --muted:#9db0c3;
+    --accent:#5b9be0; --accent-ink:#0d1a29; --accent-soft:#22374f;
+    --title-a:#1d4570; --title-b:#102a47; --title-ink:#eaf2fb;
+    --hdr-a:#2b3d52; --hdr-b:#243447; --hdr-ink:#cfe0f3;
+    --tool-a:#25303d; --tool-b:#1d2732;
+    --req:#3a3519; --req-border:#8a7a2e; --danger:#ff7b6e; --danger-soft:#3d1f1d;
+    --ok:#5cc28c; --row-hover:#26405b; --banner:#1f3044; --focus:#fbbf24;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151c25; --panel:#1c2531; --surface:#232e3b; --surface-alt:#26323f;
+  --border:#465a70; --border-soft:#34455a; --text:#e3e9f0; --muted:#9db0c3;
+  --accent:#5b9be0; --accent-ink:#0d1a29; --accent-soft:#22374f;
+  --title-a:#1d4570; --title-b:#102a47; --title-ink:#eaf2fb;
+  --hdr-a:#2b3d52; --hdr-b:#243447; --hdr-ink:#cfe0f3;
+  --tool-a:#25303d; --tool-b:#1d2732;
+  --req:#3a3519; --req-border:#8a7a2e; --danger:#ff7b6e; --danger-soft:#3d1f1d;
+  --ok:#5cc28c; --row-hover:#26405b; --banner:#1f3044; --focus:#fbbf24;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;height:100%;background:var(--bg);color:var(--text);font:12.5px/1.4 "Segoe UI",Tahoma,"Helvetica Neue",Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+img{max-width:100%}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- window chrome ---------- */
+.win{background:var(--panel);border:1px solid var(--title-b);box-shadow:var(--shadow);display:flex;flex-direction:column}
+.win-title{background:linear-gradient(var(--title-a),var(--title-b));color:var(--title-ink);font-weight:600;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:13px}
+.win-title .grow{flex:1}
+.win-x{background:transparent;border:1px solid transparent;color:var(--title-ink);width:26px;height:22px;cursor:pointer;font-size:16px;line-height:1;border-radius:2px}
+.win-x:hover{background:#c0392b;border-color:#8e2318}
+.logo{width:18px;height:18px;flex:none}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:3px 12px;border:1px solid var(--border);border-radius:2px;background:linear-gradient(var(--tool-a),var(--tool-b));cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:linear-gradient(#3b78b5,#245a91);color:#fff;border-color:#1a4675;font-weight:600}
+.btn.primary:hover{background:linear-gradient(#4686c6,#2a66a3)}
+.btn.danger{color:var(--danger)}
+.btn.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+.btn.danger-solid{background:linear-gradient(#cf3b2c,#a52517);color:#fff;border-color:#7d1a10;font-weight:600}
+.btn.sm{min-height:22px;padding:1px 8px;font-size:12px}
+.btn svg{width:15px;height:15px;flex:none}
+
+/* ---------- login ---------- */
+.login-screen{height:100%;display:flex;align-items:center;justify-content:center;padding:16px;background:
+  linear-gradient(160deg,rgba(31,95,158,.18),transparent 55%),var(--bg)}
+.login-win{width:100%;max-width:420px}
+.login-body{padding:18px 20px 8px;display:grid;gap:12px}
+.login-body p{margin:0;color:var(--muted)}
+.login-actions{display:flex;justify-content:flex-end;gap:8px;padding:6px 20px 16px}
+.login-err{color:var(--danger);min-height:1.2em;font-weight:600}
+.win-status{border-top:1px solid var(--border-soft);padding:4px 10px;font-size:11.5px;color:var(--muted);background:var(--surface-alt)}
+
+/* ---------- form controls ---------- */
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-size:11.5px;color:var(--muted)}
+.f.req label{color:var(--text);font-weight:600}
+.f.req label::after{content:" *";color:var(--danger)}
+.f input,.f select,.f textarea{width:100%;min-height:26px;padding:3px 6px;border:1px solid var(--border);border-radius:2px;background:var(--surface)}
+.f textarea{min-height:56px;resize:vertical}
+.f.req input,.f.req select,.f.req textarea{background:var(--req);border-color:var(--req-border)}
+.f input[readonly]{background:var(--surface-alt);color:var(--muted)}
+.f.invalid input,.f.invalid select,.f.invalid textarea{border-color:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+.ferr{color:var(--danger);font-size:11.5px;min-height:0}
+.f.span2{grid-column:span 2}
+.f.span3{grid-column:span 3}
+@media (max-width:560px){.f.span2,.f.span3{grid-column:auto}}
+
+/* ---------- app shell ---------- */
+.app{height:100%;display:flex;flex-direction:column}
+.titlebar{background:linear-gradient(var(--title-a),var(--title-b));color:var(--title-ink);display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:5px 10px}
+.titlebar .app-name{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.session{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:12px}
+.session span b{font-weight:600}
+.session .lbl{opacity:.75}
+.session .btn{color:var(--text)}
+.toolbar{background:linear-gradient(var(--tool-a),var(--tool-b));border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;padding:4px 8px;align-items:center}
+.tbtn{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid transparent;border-radius:2px;background:transparent;cursor:pointer;min-height:28px}
+.tbtn:hover{border-color:var(--border);background:var(--surface)}
+.tbtn[aria-current="page"]{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.tbtn svg{width:17px;height:17px;color:var(--accent)}
+.tsep{width:1px;height:22px;background:var(--border);margin:0 4px}
+main{flex:1;overflow:auto;padding:10px}
+.statusbar{display:flex;flex-wrap:wrap;gap:2px 18px;padding:3px 10px;border-top:1px solid var(--border);background:var(--tool-b);font-size:11.5px;color:var(--muted)}
+.statusbar .push{margin-left:auto}
+.storage-warn{background:var(--danger-soft);color:var(--danger);padding:6px 10px;border-bottom:1px solid var(--danger);font-weight:600}
+
+/* ---------- panes ---------- */
+.pane{background:var(--panel);border:1px solid var(--border);display:flex;flex-direction:column;min-height:100%}
+.pane-hdr{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:6px 10px;background:linear-gradient(var(--hdr-a),var(--hdr-b));border-bottom:1px solid var(--border);color:var(--hdr-ink)}
+.pane-hdr h2{margin:0;font-size:14px}
+.pane-hdr .spacer{flex:1}
+.pane-hdr .meta{font-size:12px;color:var(--muted)}
+.pane-body{padding:10px;flex:1}
+.search{display:flex;align-items:center;gap:6px}
+.search input,.search select{min-height:26px;border:1px solid var(--border);border-radius:2px;background:var(--surface);padding:2px 6px}
+.search input{width:220px;max-width:100%}
+
+/* ---------- grid table ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);background:var(--surface)}
+table.grid{border-collapse:collapse;width:100%;min-width:980px}
+.grid th{position:sticky;top:0;text-align:left;font-weight:600;font-size:12px;color:var(--hdr-ink);background:linear-gradient(var(--hdr-a),var(--hdr-b));border-bottom:1px solid var(--border);border-right:1px solid var(--border-soft);padding:5px 8px;white-space:nowrap}
+.grid td{padding:4px 8px;border-bottom:1px solid var(--border-soft);border-right:1px solid var(--border-soft);vertical-align:middle;white-space:nowrap}
+.grid tbody tr:nth-child(even){background:var(--surface-alt)}
+.grid tbody tr:hover{background:var(--row-hover)}
+.grid .clip{width:28px;text-align:center;color:var(--accent)}
+.grid .clip svg{width:15px;height:15px;vertical-align:middle}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-align:left}
+.link:hover{text-decoration:underline}
+.actions{display:flex;gap:4px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--border)}
+.empty h3{margin:0 0 6px;color:var(--text);font-size:15px}
+.empty p{margin:0 0 14px}
+
+/* ---------- conversation (registration) ---------- */
+.convo-head{display:flex;flex-wrap:wrap;gap:6px 18px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border-soft);font-size:12px;color:var(--muted)}
+.convo-head b{color:var(--text)}
+.tabs{display:flex;flex-wrap:wrap;gap:2px;padding:8px 10px 0;border-bottom:1px solid var(--border);background:var(--panel)}
+.tab{position:relative;bottom:-1px;padding:5px 12px;border:1px solid var(--border);border-bottom-color:var(--border);background:linear-gradient(var(--tool-a),var(--tool-b));cursor:pointer;border-radius:3px 3px 0 0;display:inline-flex;align-items:center;gap:6px}
+.tab[aria-selected="true"]{background:var(--surface);border-bottom-color:var(--surface);font-weight:600;color:var(--hdr-ink)}
+.tab .badge{min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--danger);color:#fff;font-size:10.5px;line-height:16px;text-align:center;font-weight:700}
+.tab .done{color:var(--ok);font-weight:700}
+.tabpanel{background:var(--surface);padding:10px;flex:1}
+.group{border:1px solid var(--border);margin-bottom:10px;background:var(--surface)}
+.group-hdr{background:linear-gradient(var(--hdr-a),var(--hdr-b));color:var(--hdr-ink);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--border)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px 12px;padding:10px}
+.convo-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--border);background:linear-gradient(var(--tool-a),var(--tool-b))}
+.convo-foot .msg{flex:1;min-width:200px;font-size:12px}
+.convo-foot .msg.err{color:var(--danger);font-weight:600}
+.req-legend{display:inline-flex;align-items:center;gap:6px}
+.req-legend i{display:inline-block;width:16px;height:12px;background:var(--req);border:1px solid var(--req-border)}
+
+/* ---------- documents ---------- */
+.hint{margin:0;padding:8px 10px 0;color:var(--muted)}
+.doc-upload{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:0 10px 10px}
+@media (max-width:720px){.doc-upload{grid-template-columns:1fr}}
+.dropzone{border:2px dashed var(--border);background:var(--surface-alt);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px;text-align:center;cursor:pointer;border-radius:3px}
+.dropzone:hover,.dropzone.over{border-color:var(--accent);background:var(--accent-soft)}
+.dropzone svg{width:30px;height:30px;color:var(--accent)}
+.dropzone .u{color:var(--accent);text-decoration:underline;font-weight:600}
+.dropzone small{color:var(--muted)}
+.dropzone.invalid{border-color:var(--danger)}
+.pending{border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;min-height:150px}
+.pending-hdr{padding:4px 8px;background:var(--surface-alt);border-bottom:1px solid var(--border-soft);font-weight:600;font-size:12px}
+.pending-prev{flex:1;display:flex;align-items:center;justify-content:center;padding:8px;min-height:160px;background:repeating-conic-gradient(var(--surface-alt) 0 25%,var(--surface) 0 50%) 0 0/16px 16px}
+.pending-prev img,.pending-prev canvas{max-height:220px;max-width:100%;box-shadow:0 1px 4px rgba(0,0,0,.25);background:#fff}
+.pending-meta{padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid var(--border-soft);font-size:12px}
+.pending-meta .name{flex:1;min-width:120px;overflow-wrap:anywhere}
+.doc-err{color:var(--danger);font-weight:600;padding:0 10px}
+.doc-actions{display:flex;justify-content:flex-end;padding:0 10px 10px;gap:8px}
+.staged{list-style:none;margin:0;padding:10px;display:grid;gap:8px}
+.staged li{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--border-soft);padding:6px;background:var(--surface-alt)}
+.thumb{width:56px;height:56px;border:1px solid var(--border-soft);background:var(--surface);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .pdf{font-weight:800;font-size:12px;color:#fff;background:#c0392b;padding:2px 5px;border-radius:2px}
+.staged .t{font-weight:600}
+.staged .s{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.staged-empty{padding:12px 10px;color:var(--muted)}
+.staged-empty.err{color:var(--danger);font-weight:600}
+
+/* ---------- patient summary ---------- */
+.banner{background:var(--banner);border:1px solid var(--border);border-left:5px solid var(--accent);padding:8px 12px;display:grid;grid-template-columns:minmax(220px,auto) 1fr;gap:6px 24px;margin-bottom:10px}
+@media (max-width:720px){.banner{grid-template-columns:1fr}}
+.banner .nm{font-size:17px;font-weight:700;color:var(--hdr-ink)}
+.banner .sub{color:var(--muted);font-size:12px}
+.banner dl{margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px 16px}
+.banner dt{font-size:11px;color:var(--muted)}
+.banner dd{margin:0 0 4px;font-weight:600;overflow-wrap:anywhere}
+.allergy{color:var(--danger)}
+.sum-layout{display:grid;grid-template-columns:180px minmax(0,1fr);gap:10px;align-items:start}
+@media (max-width:720px){.sum-layout{grid-template-columns:1fr}}
+.organizer{border:1px solid var(--border);background:var(--surface);position:sticky;top:0}
+.organizer .group-hdr{border-bottom:1px solid var(--border)}
+.organizer button{display:block;width:100%;text-align:left;padding:5px 10px;border:0;border-bottom:1px solid var(--border-soft);background:transparent;cursor:pointer}
+.organizer button:hover{background:var(--row-hover)}
+.kv{margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 16px;padding:10px}
+.kv div{min-width:0}
+.kv dt{font-size:11px;color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.none{padding:10px;color:var(--muted)}
+.doc-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:2px;font-size:10px;font-weight:800;color:#fff}
+.doc-icon.pdf{background:#c0392b}.doc-icon.img{background:#2e7d5b}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;inset:0;background:rgba(8,20,36,.55);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));z-index:50}
+.confirm-win{width:100%;max-width:440px}
+.confirm-body{padding:16px;display:flex;gap:12px}
+.confirm-body svg{width:32px;height:32px;flex:none;color:var(--danger)}
+.confirm-body p{margin:0 0 6px}
+.confirm-actions{display:flex;justify-content:flex-end;gap:8px;padding:8px 16px 14px}
+.viewer-win{width:min(1000px,100%);height:min(92vh,100%);height:min(92dvh,100%)}
+.viewer-bar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:5px 10px;background:linear-gradient(var(--tool-a),var(--tool-b));border-bottom:1px solid var(--border);font-size:12px}
+.viewer-bar .info{flex:1;min-width:180px;color:var(--muted);overflow-wrap:anywhere}
+.viewer-bar .info b{color:var(--text)}
+.viewer-body{flex:1;overflow:auto;background:#5b6672;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.viewer-body img{max-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.viewer-body canvas{max-width:100%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.viewer-body iframe{width:100%;flex:1;min-height:70vh;border:0;background:#fff}
+.viewer-msg{color:#f1f5f9;text-align:center;padding:30px 10px}
+.toast{position:fixed;right:14px;bottom:calc(36px + env(safe-area-inset-bottom,0px));background:var(--title-b);color:#fff;padding:10px 14px;border-radius:3px;box-shadow:var(--shadow);z-index:60;max-width:min(420px,calc(100% - 28px))}
+.toast.err{background:#9b1c10}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login" class="login-screen">
+  <div class="win login-win" role="dialog" aria-labelledby="loginTitle">
+    <div class="win-title">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" fill="#fff" opacity=".15"/><path d="M10 5h4v5h5v4h-5v5h-4v-5H5v-4h5z" fill="#fff"/></svg>
+      <span id="loginTitle">Patient Access Manager – Log in</span>
+    </div>
+    <div class="login-body" id="loginBody">
+      <p>Enter your user name, role and facility to open registration.</p>
+      <div class="f req"><label for="lgUser">User</label><input id="lgUser" autocomplete="username" placeholder="e.g. RAO, ANITA"></div>
+      <div class="f req"><label for="lgRole">Role</label><select id="lgRole"></select></div>
+      <div class="f req"><label for="lgFacility">Facility</label><select id="lgFacility"></select></div>
+      <div class="login-err" id="loginErr" role="alert"></div>
+    </div>
+    <div class="login-actions"><button class="btn primary" id="loginBtn" type="button">Log in</button></div>
+    <div class="win-status">Demo environment. No password is required.</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="app" hidden>
+  <header class="titlebar">
+    <div class="app-name">
+      <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" fill="#fff" opacity=".15"/><path d="M10 5h4v5h5v4h-5v5h-4v-5H5v-4h5z" fill="#fff"/></svg>
+      Patient Access Manager
+    </div>
+    <div class="session" aria-label="Signed-in session">
+      <span><span class="lbl">User:</span> <b id="hdrUser"></b></span>
+      <span><span class="lbl">Role:</span> <b id="hdrRole"></b></span>
+      <span><span class="lbl">Facility:</span> <b id="hdrFacility"></b></span>
+      <button class="btn sm" id="logoutBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</button>
+    </div>
+  </header>
+  <div id="storageWarn" class="storage-warn" hidden></div>
+  <nav class="toolbar" aria-label="Main">
+    <button class="tbtn" data-nav="list" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Patient list</button>
+    <button class="tbtn" data-nav="register" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Register patient</button>
+    <span class="tsep" aria-hidden="true"></span>
+    <span class="meta" id="tbContext" style="color:var(--muted);font-size:12px"></span>
+  </nav>
+
+  <main id="main">
+    <!-- PATIENT LIST -->
+    <section id="view-list" class="pane" hidden>
+      <div class="pane-hdr">
+        <h2>Patient list</h2>
+        <span class="meta" id="listCount"></span>
+        <span class="spacer"></span>
+        <div class="search">
+          <input id="listSearch" type="search" placeholder="Search name, MRN or FIN" aria-label="Search patients">
+          <select id="listFacility" aria-label="Filter by facility"></select>
+        </div>
+        <button class="btn primary" type="button" data-nav="register">Register patient</button>
+      </div>
+      <div class="pane-body">
+        <div id="listTableWrap" class="table-wrap" hidden>
+          <table class="grid">
+            <thead><tr>
+              <th class="clip" title="Documents attached" aria-label="Documents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></th>
+              <th>Name</th><th>MRN</th><th>FIN</th><th>Age / Sex</th><th>DOB</th><th>Encounter</th><th>Location</th><th>Attending</th><th>Facility</th><th>Admitted</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="listRows"></tbody>
+          </table>
+        </div>
+        <div id="listEmpty" class="empty" hidden></div>
+      </div>
+    </section>
+
+    <!-- REGISTRATION -->
+    <section id="view-register" class="pane" hidden>
+      <div class="pane-hdr">
+        <h2>Admit patient</h2>
+        <span class="spacer"></span>
+        <span class="req-legend meta"><i></i>Required field</span>
+      </div>
+      <div class="convo-head">
+        <span>MRN: <b>Assigned on admission</b></span>
+        <span>FIN: <b>Assigned on admission</b></span>
+        <span>Registered by: <b id="regBy"></b></span>
+      </div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div id="panels" style="display:flex;flex-direction:column;flex:1"></div>
+      <div class="convo-foot">
+        <div class="msg" id="regMsg" role="status">Complete the required fields and attach at least one ID document.</div>
+        <button class="btn" type="button" id="cancelReg">Cancel</button>
+        <button class="btn primary" type="button" id="completeReg">Complete admission</button>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section id="view-summary" class="pane" hidden>
+      <div class="pane-hdr">
+        <button class="btn sm" type="button" data-nav="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Patient list</button>
+        <h2>Patient summary</h2>
+        <span class="spacer"></span>
+        <button class="btn sm danger" type="button" id="sumDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>Delete patient</button>
+      </div>
+      <div class="pane-body" id="summaryBody"></div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="sbReady">Ready</span>
+    <span id="sbCount"></span>
+    <span>Records stored in this browser</span>
+    <span class="push" id="sbClock"></span>
+  </footer>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirmModal" class="modal" hidden>
+  <div class="win confirm-win" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+    <div class="win-title"><span id="confirmTitle" class="grow"></span></div>
+    <div class="confirm-body">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg>
+      <div id="confirmText"></div>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn" type="button" id="confirmNo">Cancel</button>
+      <button class="btn danger-solid" type="button" id="confirmYes">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER -->
+<div id="viewerModal" class="modal" hidden>
+  <div class="win viewer-win" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+    <div class="win-title"><span id="viewerTitle" class="grow"></span><button class="win-x" type="button" id="viewerX" aria-label="Close viewer">×</button></div>
+    <div class="viewer-bar">
+      <span class="info" id="viewerInfo"></span>
+      <button class="btn sm" type="button" id="viewerDownload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
+      <button class="btn sm" type="button" id="viewerClose">Close</button>
+    </div>
+    <div class="viewer-body" id="viewerBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= reference data ================= */
+const ROLES=["Registration Clerk","Admitting Clerk","Registered Nurse","Physician","Patient Access Supervisor","System Administrator"];
+const FACILITIES=[
+  {name:"Central Campus Hospital",code:"CCH"},
+  {name:"Northside Medical Center",code:"NMC"},
+  {name:"Lakeview Women's & Children's",code:"LWC"},
+  {name:"Riverside Community Hospital",code:"RCH"},
+  {name:"Eastgate Specialty Clinic",code:"ESC"}
+];
+const PHYSICIANS=["Iyer, Meera MD (General Medicine)","Menon, Arjun MD (Cardiology)","Reddy, Kavya MD (Obstetrics)","Shetty, Rohan MD (Orthopaedics)","Qureshi, Sana MD (Paediatrics)","Nair, Vikram MD (General Surgery)","Kulkarni, Priya MD (Neurology)","Thomas, Daniel MD (Emergency Medicine)"];
+const STATES=["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
+const COUNTRIES=["India","Bangladesh","Nepal","Sri Lanka","United Arab Emirates","United Kingdom","United States","Canada","Australia","Singapore","Germany","Other"];
+const REL=["Self","Spouse","Parent","Child","Sibling","Guardian","Friend","Other"];
+const ID_TYPES=["Aadhaar","Passport","Driving Licence","Voter ID","PAN","Other"];
+const MAX_BYTES=5*1024*1024;
+const OK_MIME={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","application/pdf":"pdf"};
+const EXT_MIME={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",pdf:"application/pdf"};
+
+/* ================= form definition ================= */
+const S=(arr)=>[""].concat(arr);
+const SECTIONS=[
+ {id:"patient",title:"Patient",groups:[
+  {title:"Name",fields:[
+   {n:"prefix",l:"Prefix",t:"select",o:S(["Mr","Mrs","Ms","Miss","Dr","Master","Baby"])},
+   {n:"lastName",l:"Last name",req:1},
+   {n:"firstName",l:"First name",req:1},
+   {n:"middleName",l:"Middle name"},
+   {n:"suffix",l:"Suffix",t:"select",o:S(["Jr","Sr","II","III"])},
+   {n:"preferredName",l:"Preferred name"}
+  ]},
+  {title:"Personal details",fields:[
+   {n:"dob",l:"Date of birth",t:"date",req:1},
+   {n:"_age",l:"Age",t:"computed"},
+   {n:"sex",l:"Sex at birth",t:"select",o:S(["Male","Female","Intersex","Unknown"]),req:1},
+   {n:"genderIdentity",l:"Gender identity",t:"select",o:S(["Man","Woman","Non-binary","Transgender man","Transgender woman","Other","Prefer not to say"])},
+   {n:"maritalStatus",l:"Marital status",t:"select",o:S(["Single","Married","Divorced","Widowed","Separated","Unknown"])},
+   {n:"bloodGroup",l:"Blood group",t:"select",o:S(["A+","A-","B+","B-","AB+","AB-","O+","O-","Unknown"])},
+   {n:"religion",l:"Religion",t:"select",o:S(["Hindu","Muslim","Christian","Sikh","Buddhist","Jain","Parsi","Jewish","None","Other","Prefer not to say"])},
+   {n:"language",l:"Preferred language",t:"select",o:S(["English","Hindi","Kannada","Tamil","Telugu","Malayalam","Marathi","Bengali","Gujarati","Urdu","Other"])},
+   {n:"interpreter",l:"Interpreter needed",t:"select",o:["No","Yes"],d:"No"},
+   {n:"nationality",l:"Nationality",d:"Indian"},
+   {n:"occupation",l:"Occupation"},
+   {n:"abhaId",l:"ABHA number (health ID)"}
+  ]}
+ ]},
+ {id:"contact",title:"Address & contact",groups:[
+  {title:"Home address",fields:[
+   {n:"address1",l:"Address line 1",req:1,span:2},
+   {n:"address2",l:"Address line 2",span:2},
+   {n:"city",l:"City / town"},
+   {n:"district",l:"District"},
+   {n:"state",l:"State",t:"select",o:S(STATES)},
+   {n:"pin",l:"PIN / postal code"},
+   {n:"country",l:"Country",t:"select",o:S(COUNTRIES),d:"India"}
+  ]},
+  {title:"Phone & email",fields:[
+   {n:"mobile",l:"Mobile phone",t:"tel",req:1},
+   {n:"homePhone",l:"Home phone",t:"tel"},
+   {n:"workPhone",l:"Work phone",t:"tel"},
+   {n:"email",l:"Email",t:"email"},
+   {n:"contactPref",l:"Preferred contact method",t:"select",o:S(["Mobile call","SMS","WhatsApp","Email","Home phone"])}
+  ]}
+ ]},
+ {id:"encounter",title:"Encounter",groups:[
+  {title:"Admission",fields:[
+   {n:"facility",l:"Facility",t:"select",o:S(FACILITIES.map(f=>f.name)),req:1},
+   {n:"encounterType",l:"Encounter type",t:"select",o:S(["Inpatient","Outpatient","Emergency","Observation","Day care","Pre-admit"]),req:1},
+   {n:"admitDateTime",l:"Admit date & time",t:"datetime-local"},
+   {n:"medicalService",l:"Medical service",t:"select",o:S(["General Medicine","Cardiology","Orthopaedics","General Surgery","Obstetrics & Gynaecology","Paediatrics","Neurology","Oncology","Nephrology","Pulmonology","Emergency Medicine"])},
+   {n:"attending",l:"Attending physician",t:"select",o:S(PHYSICIANS),req:1},
+   {n:"referring",l:"Referring physician"},
+   {n:"admitSource",l:"Admit source",t:"select",o:S(["Physician referral","Emergency department","Clinic referral","Transfer from another hospital","Self referral","Ambulance"])},
+   {n:"arrivalMode",l:"Mode of arrival",t:"select",o:S(["Walk-in","Private vehicle","Ambulance","Wheelchair","Stretcher","Police"])},
+   {n:"acuity",l:"Triage priority",t:"select",o:S(["1 – Resuscitation","2 – Emergent","3 – Urgent","4 – Less urgent","5 – Non-urgent"])},
+   {n:"reasonForVisit",l:"Reason for visit",t:"textarea",req:1,span:2}
+  ]},
+  {title:"Location",fields:[
+   {n:"nurseUnit",l:"Nurse unit / ward",t:"select",o:S(["Medical Ward 3A","Surgical Ward 4B","ICU","CCU","Maternity","Paediatrics","Emergency Dept","Day Care"])},
+   {n:"room",l:"Room"},
+   {n:"bed",l:"Bed"},
+   {n:"accommodation",l:"Accommodation",t:"select",o:S(["General ward","Semi-private","Private","Deluxe suite","ICU bed"])}
+  ]}
+ ]},
+ {id:"financial",title:"Financial",groups:[
+  {title:"Insurance",fields:[
+   {n:"financialClass",l:"Financial class",t:"select",o:S(["Self pay","Private insurance","Government scheme (PM-JAY)","State health scheme","Corporate / employer","CGHS / ECHS","International patient"])},
+   {n:"payer",l:"Insurance payer / TPA"},
+   {n:"plan",l:"Plan name"},
+   {n:"policyNumber",l:"Policy number"},
+   {n:"groupNumber",l:"Group / member ID"},
+   {n:"subscriberName",l:"Subscriber name"},
+   {n:"subscriberRel",l:"Relationship to subscriber",t:"select",o:S(REL)},
+   {n:"policyValidTo",l:"Policy valid until",t:"date"},
+   {n:"preAuth",l:"Pre-authorisation number"}
+  ]},
+  {title:"Guarantor",fields:[
+   {n:"guarantorName",l:"Guarantor name"},
+   {n:"guarantorRel",l:"Relationship to patient",t:"select",o:S(REL)},
+   {n:"guarantorPhone",l:"Guarantor phone",t:"tel"}
+  ]}
+ ]},
+ {id:"contacts",title:"Contacts",groups:[
+  {title:"Emergency contact / next of kin",fields:[
+   {n:"ecName",l:"Name"},
+   {n:"ecRel",l:"Relationship",t:"select",o:S(REL.filter(r=>r!=="Self"))},
+   {n:"ecPhone",l:"Phone",t:"tel"},
+   {n:"ecAltPhone",l:"Alternate phone",t:"tel"}
+  ]},
+  {title:"Primary care physician",fields:[
+   {n:"pcpName",l:"Name"},
+   {n:"pcpPhone",l:"Phone",t:"tel"}
+  ]}
+ ]},
+ {id:"clinical",title:"Clinical",groups:[
+  {title:"Allergies & measurements",fields:[
+   {n:"allergyStatus",l:"Allergy status",t:"select",o:["Not assessed","No known allergies","Allergies recorded"],d:"Not assessed"},
+   {n:"allergies",l:"Allergies and reactions",t:"textarea",span:2},
+   {n:"heightCm",l:"Height (cm)",t:"number"},
+   {n:"weightKg",l:"Weight (kg)",t:"number"},
+   {n:"_bmi",l:"BMI",t:"computed"}
+  ]},
+  {title:"Care preferences",fields:[
+   {n:"advanceDirective",l:"Advance directive",t:"select",o:S(["None","Living will","DNR","Healthcare proxy","Unknown"])},
+   {n:"organDonor",l:"Organ donor",t:"select",o:S(["Yes","No","Undecided"])},
+   {n:"isolation",l:"Isolation precautions",t:"select",o:S(["None","Contact","Droplet","Airborne","Protective"])},
+   {n:"pregnancy",l:"Pregnancy status",t:"select",o:S(["Not applicable","Not pregnant","Pregnant","Unknown"])},
+   {n:"notes",l:"Registration notes",t:"textarea",span:3}
+  ]}
+ ]}
+];
+const FIELDS={};SECTIONS.forEach(s=>s.groups.forEach(g=>g.fields.forEach(f=>{f.sec=s.id;FIELDS[f.n]=f;})));
+const REQUIRED=Object.values(FIELDS).filter(f=>f.req).map(f=>f.n);
+
+/* ================= helpers ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"id-"+Date.now().toString(36)+Math.random().toString(36).slice(2);
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const pad=(n,l=2)=>String(n).padStart(l,"0");
+function fmtDate(v){if(!v)return "";const d=/^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(v+"T00:00:00"):new Date(v);if(isNaN(d))return v;return pad(d.getDate())+"-"+MON[d.getMonth()]+"-"+d.getFullYear();}
+function fmtDateTime(v){if(!v)return "";const d=new Date(v);if(isNaN(d))return v;return fmtDate(d.toISOString())+" "+pad(d.getHours())+":"+pad(d.getMinutes());}
+function localNow(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());}
+function fmtSize(b){return b<1024?b+" B":b<1048576?(b/1024).toFixed(0)+" KB":(b/1048576).toFixed(2)+" MB";}
+function ageStr(dob){if(!dob)return "";const d=new Date(dob+"T00:00:00"),n=new Date();if(isNaN(d)||d>n)return "";let y=n.getFullYear()-d.getFullYear(),m=n.getMonth()-d.getMonth();if(n.getDate()<d.getDate())m--;if(m<0){y--;m+=12;}if(y>=2)return y+" years";const mm=y*12+m;if(mm>=1)return mm+(mm===1?" month":" months");const days=Math.floor((n-d)/864e5);return days+(days===1?" day":" days");}
+function shortAge(dob){const a=ageStr(dob);return a.replace(" years","Y").replace(/ months?/,"M").replace(/ days?/,"D");}
+function fullName(f){return (f.lastName||"").toUpperCase()+", "+(f.firstName||"")+(f.middleName?" "+f.middleName:"");}
+function location(f){return [f.nurseUnit,f.room,f.bed].filter(Boolean).join(" / ");}
+function facCode(name){const f=FACILITIES.find(x=>x.name===name);return f?f.code:"GEN";}
+function bufToBlob(buf,mime){return new Blob([buf],{type:mime});}
+function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob);});}
+const isPdf=m=>m==="application/pdf";
+const ICON={
+ clip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+ trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>',
+ eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+ down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
+ open:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+ upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>',
+ x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+};
+
+/* ================= storage (IndexedDB) ================= */
+const DB_NAME="patient-access-portal",DB_VER=1;let dbP=null;
+function openDB(){
+  if(dbP)return dbP;
+  dbP=new Promise((res,rej)=>{
+    let req;try{req=indexedDB.open(DB_NAME,DB_VER);}catch(e){return rej(e);}
+    req.onupgradeneeded=()=>{const db=req.result;
+      if(!db.objectStoreNames.contains("patients"))db.createObjectStore("patients",{keyPath:"id"});
+      if(!db.objectStoreNames.contains("documents")){const s=db.createObjectStore("documents",{keyPath:"id"});s.createIndex("patientId","patientId",{unique:false});}
+      if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta");};
+    req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);
+    req.onblocked=()=>rej(new Error("Storage is blocked by another open tab."));
+  });
+  dbP.catch(()=>{dbP=null;});
+  return dbP;
+}
+const reqP=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+const txDone=tx=>new Promise((res,rej)=>{tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error("Transaction aborted"));});
+async function dbAllPatients(){const db=await openDB();return reqP(db.transaction("patients").objectStore("patients").getAll());}
+async function dbDocsFor(pid){const db=await openDB();return reqP(db.transaction("documents").objectStore("documents").index("patientId").getAll(pid));}
+async function dbSavePatient(p,docs){
+  const db=await openDB();const tx=db.transaction(["patients","documents","meta"],"readwrite");const done=txDone(tx);
+  const meta=tx.objectStore("meta");const r=meta.get("seq");
+  r.onsuccess=()=>{
+    const seq=(r.result||0)+1;meta.put(seq,"seq");
+    p.mrn=String(1000000+seq);
+    p.fin=facCode(p.fields.facility)+String(new Date().getFullYear()).slice(2)+pad(seq,5);
+    tx.objectStore("patients").put(p);
+    docs.forEach(d=>tx.objectStore("documents").put(d));
+  };
+  await done;return p;
+}
+async function dbDeletePatient(pid){
+  const db=await openDB();const tx=db.transaction(["patients","documents"],"readwrite");const done=txDone(tx);
+  tx.objectStore("patients").delete(pid);
+  const kr=tx.objectStore("documents").index("patientId").getAllKeys(pid);
+  kr.onsuccess=()=>kr.result.forEach(k=>tx.objectStore("documents").delete(k));
+  await done;
+}
+
+/* ================= state ================= */
+let session=null,patients=[],staged=[],pending=null,currentPatientId=null,storageOK=true;
+const SESSION_KEY="pam.session";
+
+/* ================= downloads ================= */
+let downloadsP=null;
+try{if(window.claude&&typeof window.claude.use==="function")downloadsP=window.claude.use("downloads");}catch(e){downloadsP=null;}
+function safeName(name,mime){let n=String(name||"document").replace(/[\\/:*?"<>|]+/g,"_");const ext=OK_MIME[mime];if(ext&&!new RegExp("\\.("+ext+(ext==="jpg"?"|jpeg":"")+")$","i").test(n))n+="."+ext;return n;}
+async function downloadDoc(doc){
+  const blob=bufToBlob(doc.data,doc.mime),filename=safeName(doc.fileName,doc.mime);
+  let cap=null;
+  if(downloadsP){try{cap=await Promise.race([downloadsP,new Promise(r=>setTimeout(()=>r(null),1500))]);}catch(e){cap=null;}}
+  if(cap){
+    try{await cap.save({filename,data:blob});toast("Download started: "+filename);}
+    catch(e){const c=e&&e.code;if(c==="declined")return;if(c==="rate_limited")toast("A download prompt is already open.",true);else toast("This file can't be downloaded here.",true);}
+    return;
+  }
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+
+/* ================= PDF rendering ================= */
+let pdfjsP=null;
+function loadPdfJs(){
+  if(pdfjsP)return pdfjsP;
+  pdfjsP=new Promise((res,rej)=>{
+    if(window.pdfjsLib)return res(window.pdfjsLib);
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js";
+    s.onload=()=>{const lib=window.pdfjsLib||window["pdfjs-dist/build/pdf"];if(!lib)return rej(new Error("PDF library missing"));lib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";res(lib);};
+    s.onerror=()=>rej(new Error("PDF library failed to load"));
+    document.head.appendChild(s);
+  });
+  pdfjsP.catch(()=>{pdfjsP=null;});
+  return pdfjsP;
+}
+function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);}
+async function renderPdf(buf,container,{width,maxPages=60,onPageCount}={}){
+  const lib=await withTimeout(loadPdfJs(),12000);
+  const pdf=await withTimeout(lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise,15000);
+  if(onPageCount)onPageCount(pdf.numPages);
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const n=Math.min(pdf.numPages,maxPages);
+  for(let i=1;i<=n;i++){
+    const page=await pdf.getPage(i);const base=page.getViewport({scale:1});
+    const scale=Math.max(.2,width/base.width);const vp=page.getViewport({scale:scale*dpr});
+    const c=document.createElement("canvas");c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);
+    c.style.width=Math.floor(vp.width/dpr)+"px";c.setAttribute("aria-label","Page "+i);
+    container.appendChild(c);
+    await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+  }
+  return pdf.numPages;
+}
+
+/* ================= UI utils ================= */
+let toastT;
+function toast(msg,err){const t=$("#toast");t.textContent=msg;t.className="toast"+(err?" err":"");t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3800);}
+let lastFocus=null;
+function confirmDialog({title,html,yes="Delete"}){
+  return new Promise(resolve=>{
+    const m=$("#confirmModal");lastFocus=document.activeElement;
+    $("#confirmTitle").textContent=title;$("#confirmText").innerHTML=html;$("#confirmYes").textContent=yes;m.hidden=false;$("#confirmNo").focus();
+    const close=v=>{m.hidden=true;$("#confirmYes").onclick=$("#confirmNo").onclick=null;document.removeEventListener("keydown",key);if(lastFocus&&lastFocus.focus)lastFocus.focus();resolve(v);};
+    const key=e=>{if(e.key==="Escape")close(false);};
+    $("#confirmYes").onclick=()=>close(true);$("#confirmNo").onclick=()=>close(false);document.addEventListener("keydown",key);
+  });
+}
+
+/* ================= login ================= */
+function fillSelect(sel,opts,placeholder){sel.innerHTML=(placeholder?'<option value="">'+esc(placeholder)+"</option>":"")+opts.map(o=>'<option value="'+esc(o)+'">'+esc(o)+"</option>").join("");}
+function initLogin(){
+  fillSelect($("#lgRole"),ROLES,"Select role");
+  fillSelect($("#lgFacility"),FACILITIES.map(f=>f.name),"Select facility");
+  $("#loginBtn").addEventListener("click",doLogin);
+  $("#loginBody").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName!=="SELECT")doLogin();});
+  ["lgUser","lgRole","lgFacility"].forEach(id=>$("#"+id).addEventListener("input",()=>{$("#"+id).closest(".f").classList.remove("invalid");$("#loginErr").textContent="";}));
+}
+function doLogin(){
+  const user=$("#lgUser").value.trim(),role=$("#lgRole").value,facility=$("#lgFacility").value;
+  const missing=[];
+  [["lgUser",user,"User"],["lgRole",role,"Role"],["lgFacility",facility,"Facility"]].forEach(([id,v,l])=>{const f=$("#"+id).closest(".f");f.classList.toggle("invalid",!v);if(!v)missing.push(l);});
+  if(missing.length){$("#loginErr").textContent="Enter "+missing.join(", ").replace(/, ([^,]*)$/," and $1")+" to log in.";const first=[["lgUser",user],["lgRole",role],["lgFacility",facility]].find(x=>!x[1]);$("#"+first[0]).focus();return;}
+  session={user,role,facility,loginAt:new Date().toISOString()};
+  try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));}catch(e){}
+  enterApp();
+}
+function enterApp(){
+  $("#hdrUser").textContent=session.user;$("#hdrRole").textContent=session.role;$("#hdrFacility").textContent=session.facility;
+  $("#regBy").textContent=session.user+" ("+session.role+")";
+  $("#login").hidden=true;$("#app").hidden=false;
+  resetForm();showView("list");
+}
+async function logout(){
+  if(isDirty()&&!(await confirmDialog({title:"Log out",html:"<p>You have an unfinished registration.</p><p>Logging out discards it.</p>",yes:"Log out"})))return;
+  try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}
+  session=null;resetForm();closeViewer();
+  $("#app").hidden=true;$("#login").hidden=false;
+  $("#lgUser").value="";$("#lgRole").value="";$("#lgFacility").value="";$("#loginErr").textContent="";$("#lgUser").focus();
+}
+
+/* ================= views ================= */
+function showView(v){
+  ["list","register","summary"].forEach(x=>$("#view-"+x).hidden=x!==v);
+  $$(".toolbar .tbtn[data-nav]").forEach(b=>{if(b.dataset.nav===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+  $("#tbContext").textContent=v==="register"?"New admission":v==="summary"?"Viewing patient chart":"";
+  $("#main").scrollTop=0;
+  if(v==="list")renderList();
+}
+
+/* ================= registration form ================= */
+function controlHTML(f){
+  const id="f_"+f.n,common='id="'+id+'" name="'+f.n+'"'+(f.req?' aria-required="true"':"")+' aria-describedby="'+id+'_e"';
+  let c;
+  if(f.t==="select")c="<select "+common+">"+f.o.map(o=>'<option value="'+esc(o)+'">'+(o===""?"Select":esc(o))+"</option>").join("")+"</select>";
+  else if(f.t==="textarea")c="<textarea "+common+' rows="2"></textarea>';
+  else if(f.t==="computed")c='<input id="'+id+'" readonly tabindex="-1">';
+  else c="<input "+common+' type="'+(f.t||"text")+'"'+(f.t==="number"?' min="0" step="0.1" inputmode="decimal"':"")+(f.t==="tel"?' inputmode="tel" autocomplete="off"':"")+(f.n==="dob"?' max="'+localNow().slice(0,10)+'"':"")+">";
+  return '<div class="f'+(f.req?" req":"")+(f.span?" span"+f.span:"")+'" data-field="'+f.n+'"><label for="'+id+'">'+esc(f.l)+"</label>"+c+'<div class="ferr" id="'+id+'_e"></div></div>';
+}
+function buildForm(){
+  const tabs=$("#tabs"),panels=$("#panels");
+  const all=SECTIONS.concat([{id:"documents",title:"ID documents"}]);
+  tabs.innerHTML=all.map((s,i)=>'<button class="tab" role="tab" type="button" id="tab_'+s.id+'" aria-controls="panel_'+s.id+'" aria-selected="'+(i===0)+'" data-tab="'+s.id+'">'+esc(s.title)+(s.id==="documents"?' <span class="req-star" style="color:var(--danger)">*</span>':"")+'<span class="badge" hidden></span></button>').join("");
+  panels.innerHTML=SECTIONS.map((s,i)=>'<div class="tabpanel" role="tabpanel" id="panel_'+s.id+'" aria-labelledby="tab_'+s.id+'"'+(i?" hidden":"")+">"+s.groups.map(g=>'<div class="group"><div class="group-hdr">'+esc(g.title)+'</div><div class="fgrid">'+g.fields.map(controlHTML).join("")+"</div></div>").join("")+"</div>").join("")+docsPanelHTML();
+  tabs.addEventListener("click",e=>{const b=e.target.closest(".tab");if(b)selectTab(b.dataset.tab);});
+  tabs.addEventListener("keydown",e=>{if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;const bs=$$(".tab",tabs);let i=bs.indexOf(document.activeElement);if(i<0)return;i=(i+(e.key==="ArrowRight"?1:-1)+bs.length)%bs.length;bs[i].focus();selectTab(bs[i].dataset.tab);});
+  $("#f_dob").addEventListener("input",()=>{$("#f__age").value=ageStr($("#f_dob").value);});
+  ["heightCm","weightKg"].forEach(n=>$("#f_"+n).addEventListener("input",calcBMI));
+  panels.addEventListener("input",e=>{const f=e.target.closest(".f");if(f&&f.classList.contains("invalid")){f.classList.remove("invalid");const er=f.querySelector(".ferr");if(er)er.textContent="";updateBadges();}});
+  initDocs();
+}
+function calcBMI(){const h=parseFloat($("#f_heightCm").value),w=parseFloat($("#f_weightKg").value);$("#f__bmi").value=(h>0&&w>0)?(w/((h/100)**2)).toFixed(1):"";}
+function selectTab(id){$$(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.tab===id)));$$(".tabpanel").forEach(p=>p.hidden=p.id!=="panel_"+id);}
+function docsPanelHTML(){
+  return '<div class="tabpanel" role="tabpanel" id="panel_documents" aria-labelledby="tab_documents" hidden>'+
+  '<div class="group"><div class="group-hdr">Add identification document</div>'+
+  '<p class="hint">At least one ID document is required to complete the admission. Accepted files: JPG, PNG, WebP or PDF, up to 5 MB each.</p>'+
+  '<div class="fgrid">'+
+   '<div class="f req" data-field="docType"><label for="docType">ID type</label><select id="docType"><option value="">Select</option>'+ID_TYPES.map(t=>'<option>'+esc(t)+"</option>").join("")+'</select><div class="ferr" id="docType_e"></div></div>'+
+   '<div class="f req" data-field="docNumber"><label for="docNumber">ID number</label><input id="docNumber" autocomplete="off"><div class="ferr" id="docNumber_e"></div></div>'+
+   '<div class="f req" data-field="docIssuer"><label for="docIssuer">Issuing country / state</label><input id="docIssuer" list="issuerList" autocomplete="off"><datalist id="issuerList">'+COUNTRIES.filter(c=>c!=="Other").concat(STATES.map(s=>s+", India")).map(c=>'<option value="'+esc(c)+'">').join("")+'</datalist><div class="ferr" id="docIssuer_e"></div></div>'+
+  "</div>"+
+  '<div class="doc-upload">'+
+   '<div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="dzHelp">'+ICON.upload+'<div>Drag a file here or <span class="u">browse</span></div><small id="dzHelp">JPG, PNG, WebP or PDF, up to 5 MB</small><input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" hidden></div>'+
+   '<div class="pending" id="pendingBox"><div class="pending-hdr">Preview</div><div class="pending-prev" id="pendingPrev"><span style="color:var(--muted)">Choose a file to see a preview.</span></div><div class="pending-meta" id="pendingMeta" hidden></div></div>'+
+  "</div>"+
+  '<div class="doc-err" id="docErr" role="alert"></div>'+
+  '<div class="doc-actions"><button type="button" class="btn primary" id="addDocBtn">Add document</button></div>'+
+  "</div>"+
+  '<div class="group"><div class="group-hdr">Documents to save with this admission (<span id="stagedCount">0</span>)</div><div id="stagedWrap"></div></div>'+
+  "</div>";
+}
+
+/* ---- documents staging ---- */
+function initDocs(){
+  const dz=$("#dropzone"),fi=$("#fileInput");
+  dz.addEventListener("click",e=>{if(e.target!==fi)fi.click();});
+  dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fi.click();}});
+  fi.addEventListener("change",()=>{if(fi.files&&fi.files[0])setPending(fi.files[0]);fi.value="";});
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over");}));
+  ["dragleave","dragend"].forEach(ev=>dz.addEventListener(ev,()=>dz.classList.remove("over")));
+  dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("over");const fl=e.dataTransfer&&e.dataTransfer.files;if(!fl||!fl.length)return;if(fl.length>1)toast("One file at a time. Using the first file.");setPending(fl[0]);});
+  window.addEventListener("dragover",e=>e.preventDefault());window.addEventListener("drop",e=>e.preventDefault());
+  $("#addDocBtn").addEventListener("click",()=>addPendingDoc(false));
+  $("#docType").addEventListener("change",()=>{const t=$("#docType").value;if(["Aadhaar","PAN","Voter ID"].includes(t)&&!$("#docIssuer").value.trim())$("#docIssuer").value="India";});
+  ["docType","docNumber","docIssuer"].forEach(id=>$("#"+id).addEventListener("input",()=>{const f=$("#"+id).closest(".f");f.classList.remove("invalid");$("#"+id+"_e").textContent="";}));
+  $("#stagedWrap").addEventListener("click",async e=>{
+    const b=e.target.closest("button[data-act]");if(!b)return;const d=staged.find(x=>x.id===b.dataset.id);if(!d)return;
+    if(b.dataset.act==="view")openViewer(d);
+    if(b.dataset.act==="remove"){staged=staged.filter(x=>x.id!==d.id);renderStaged();updateBadges();toast("Removed "+d.docType+" document.");}
+  });
+  renderStaged();
+}
+function docErr(m){$("#docErr").textContent=m||"";$("#dropzone").classList.toggle("invalid",!!m&&!pending);}
+async function setPending(file){
+  docErr("");
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  let mime=OK_MIME[file.type]?file.type:EXT_MIME[ext];
+  if(!mime||(file.type&&!OK_MIME[file.type])){docErr("“"+file.name+"” isn't an accepted file type. Use JPG, PNG, WebP or PDF.");return;}
+  if(file.size===0){docErr("“"+file.name+"” is empty. Choose another file.");return;}
+  if(file.size>MAX_BYTES){docErr("“"+file.name+"” is "+fmtSize(file.size)+". The limit is 5 MB.");return;}
+  let data;try{data=await file.arrayBuffer();}catch(e){docErr("The file couldn't be read. Try again.");return;}
+  pending={name:file.name,mime,size:file.size,data};
+  await renderPending();
+}
+async function renderPending(){
+  const prev=$("#pendingPrev"),meta=$("#pendingMeta");prev.innerHTML="";
+  if(!pending){prev.innerHTML='<span style="color:var(--muted)">Choose a file to see a preview.</span>';meta.hidden=true;meta.innerHTML="";return;}
+  meta.hidden=false;
+  meta.innerHTML='<span class="name"><b>'+esc(pending.name)+"</b><br><span style=\"color:var(--muted)\">"+(isPdf(pending.mime)?"PDF":pending.mime.split("/")[1].toUpperCase())+", "+fmtSize(pending.size)+'</span></span><button type="button" class="btn sm" id="pFull">'+ICON.eye+'Full preview</button><button type="button" class="btn sm danger" id="pClear">'+ICON.x+"Clear</button>";
+  $("#pFull").onclick=()=>openViewer({fileName:pending.name,mime:pending.mime,data:pending.data,size:pending.size,docType:$("#docType").value||"Document (not yet added)",docNumber:$("#docNumber").value});
+  $("#pClear").onclick=()=>{pending=null;renderPending();};
+  const blob=bufToBlob(pending.data,pending.mime);const token=pending;
+  if(isPdf(pending.mime)){
+    prev.innerHTML='<span style="color:var(--muted)">Rendering PDF…</span>';
+    const holder=document.createElement("div");
+    try{const pages=await renderPdf(pending.data,holder,{width:220,maxPages:1});if(pending!==token)return;prev.innerHTML="";prev.appendChild(holder);meta.querySelector(".name span").textContent+=", "+pages+(pages===1?" page":" pages");}
+    catch(e){if(pending!==token)return;prev.innerHTML='<div style="text-align:center"><span class="doc-icon pdf" style="width:46px;height:34px;font-size:13px">PDF</span><p style="margin:8px 0 0;color:var(--muted)">Use Full preview to open the PDF.</p></div>';}
+  }else{
+    const url=await blobToDataURL(blob);if(pending!==token)return;
+    const img=new Image();img.alt="Preview of "+pending.name;img.src=url;prev.appendChild(img);
+  }
+}
+function validateDocEntry(){
+  const t=$("#docType").value,num=$("#docNumber").value.trim(),iss=$("#docIssuer").value.trim();const errs={};
+  if(!t)errs.docType="Select the ID type.";
+  if(!num)errs.docNumber="Enter the ID number.";
+  else if(t==="Aadhaar"&&!/^\d{12}$/.test(num.replace(/[\s-]/g,"")))errs.docNumber="Aadhaar numbers have 12 digits.";
+  else if(t==="PAN"&&!/^[A-Z]{5}\d{4}[A-Z]$/i.test(num))errs.docNumber="PAN format is ABCDE1234F.";
+  if(!iss)errs.docIssuer="Enter the issuing country or state.";
+  return errs;
+}
+function showDocEntryErrors(errs){["docType","docNumber","docIssuer"].forEach(k=>{const f=$("#"+k).closest(".f");f.classList.toggle("invalid",!!errs[k]);$("#"+k+"_e").textContent=errs[k]||"";});}
+function addPendingDoc(silent){
+  const errs=validateDocEntry();showDocEntryErrors(errs);
+  if(!pending){docErr("Choose a file to upload.");}
+  if(Object.keys(errs).length||!pending){if(!silent)(($("#"+Object.keys(errs)[0]))||$("#dropzone")).focus();return false;}
+  const t=$("#docType").value;let num=$("#docNumber").value.trim();
+  if(t==="PAN")num=num.toUpperCase();if(t==="Aadhaar"){const d=num.replace(/\D/g,"");num=d.slice(0,4)+" "+d.slice(4,8)+" "+d.slice(8);}
+  staged.push({id:uid(),docType:t,docNumber:num,docIssuer:$("#docIssuer").value.trim(),fileName:pending.name,mime:pending.mime,size:pending.size,data:pending.data,uploadedAt:new Date().toISOString(),uploadedBy:session?session.user:""});
+  pending=null;renderPending();$("#docType").value="";$("#docNumber").value="";$("#docIssuer").value="";docErr("");
+  renderStaged();updateBadges();
+  if(!silent)toast("Document added. It will be saved when you complete the admission.");
+  return true;
+}
+async function renderStaged(){
+  $("#stagedCount").textContent=staged.length;const w=$("#stagedWrap");
+  if(!staged.length){w.innerHTML='<div class="staged-empty" id="stagedEmpty">No documents added yet.</div>';return;}
+  w.innerHTML='<ul class="staged">'+staged.map(d=>'<li><div class="thumb" data-thumb="'+d.id+'">'+(isPdf(d.mime)?'<span class="pdf">PDF</span>':"")+'</div><div><div class="t">'+esc(d.docType)+": "+esc(d.docNumber)+'</div><div class="s">Issued by '+esc(d.docIssuer)+"<br>"+esc(d.fileName)+", "+fmtSize(d.size)+'</div></div><div class="actions"><button type="button" class="btn sm" data-act="view" data-id="'+d.id+'">'+ICON.eye+'View</button><button type="button" class="btn sm danger" data-act="remove" data-id="'+d.id+'" aria-label="Remove '+esc(d.docType)+' document">'+ICON.trash+"Remove</button></div></li>").join("")+"</ul>";
+  for(const d of staged){if(!isPdf(d.mime)){const el=w.querySelector('[data-thumb="'+d.id+'"]');if(!el)continue;if(!d._thumb)d._thumb=await blobToDataURL(bufToBlob(d.data,d.mime));el.innerHTML='<img alt="" src="'+d._thumb+'">';}}
+}
+
+/* ---- form values / validation ---- */
+function readForm(){const o={};Object.values(FIELDS).forEach(f=>{if(f.t==="computed")return;const el=$("#f_"+f.n);o[f.n]=el?el.value.trim():"";});return o;}
+function isDirty(){if(staged.length||pending)return true;const v=readForm();return Object.values(FIELDS).some(f=>f.t!=="computed"&&v[f.n]&&v[f.n]!==(defaultFor(f)||""));}
+function defaultFor(f){if(f.n==="facility")return session?session.facility:"";if(f.n==="admitDateTime")return null;return f.d||"";}
+function resetForm(){
+  Object.values(FIELDS).forEach(f=>{const el=$("#f_"+f.n);if(!el)return;el.value=f.n==="admitDateTime"?localNow():(defaultFor(f)||"");});
+  $$("#panels .f.invalid").forEach(f=>f.classList.remove("invalid"));$$("#panels .ferr").forEach(e=>e.textContent="");
+  staged=[];pending=null;renderStaged();renderPending();docErr("");
+  ["docType","docNumber","docIssuer"].forEach(id=>$("#"+id).value="");
+  $("#regMsg").className="msg";$("#regMsg").textContent="Complete the required fields and attach at least one ID document.";
+  selectTab("patient");updateBadges(true);
+}
+function setFieldErr(n,msg){const f=$('#panels .f[data-field="'+n+'"]');if(!f)return;f.classList.add("invalid");const e=f.querySelector(".ferr");if(e)e.textContent=msg;}
+function validate(){
+  const v=readForm(),errs=[];
+  $$("#panels .f.invalid").forEach(f=>{if(!["docType","docNumber","docIssuer"].includes(f.dataset.field)){f.classList.remove("invalid");const e=f.querySelector(".ferr");if(e)e.textContent="";}});
+  REQUIRED.forEach(n=>{if(!v[n])errs.push({n,sec:FIELDS[n].sec,msg:FIELDS[n].l+" is required."});});
+  if(v.dob){const d=new Date(v.dob+"T00:00:00");if(isNaN(d)||d>new Date())errs.push({n:"dob",sec:"patient",msg:"Date of birth can't be in the future."});else if(new Date().getFullYear()-d.getFullYear()>130)errs.push({n:"dob",sec:"patient",msg:"Check the year of birth."});}
+  if(v.mobile&&v.mobile.replace(/\D/g,"").length<10)errs.push({n:"mobile",sec:"contact",msg:"Enter at least 10 digits."});
+  if(v.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))errs.push({n:"email",sec:"contact",msg:"Enter a valid email address."});
+  if(v.pin&&v.country==="India"&&!/^\d{6}$/.test(v.pin))errs.push({n:"pin",sec:"contact",msg:"Indian PIN codes have 6 digits."});
+  errs.forEach(e=>setFieldErr(e.n,e.msg));
+  if(!staged.length)errs.push({n:"__docs",sec:"documents",msg:"At least one ID document is required."});
+  return errs;
+}
+function updateBadges(clear){
+  const counts={};
+  if(!clear){$$("#panels .f.invalid").forEach(f=>{const n=f.dataset.field;const sec=FIELDS[n]?FIELDS[n].sec:"documents";counts[sec]=(counts[sec]||0)+1;});}
+  const se=$("#stagedEmpty");if(se)se.classList.toggle("err",!clear&&$("#tab_documents").dataset.err==="1");
+  $$(".tab").forEach(t=>{let c=counts[t.dataset.tab]||0;if(t.dataset.tab==="documents"&&t.dataset.err==="1"&&!staged.length)c=Math.max(c,1);if(t.dataset.tab==="documents"&&staged.length)t.dataset.err="0";const b=t.querySelector(".badge");b.hidden=!c;b.textContent=c;b.setAttribute("aria-label",c+" issues");});
+}
+async function completeAdmission(){
+  if(!storageOK){toast("Browser storage is unavailable, so this admission can't be saved.",true);return;}
+  // auto-include a fully described pending document
+  if(pending){if(!addPendingDoc(true)){selectTab("documents");$("#regMsg").className="msg err";$("#regMsg").textContent="Finish or clear the document you started on the ID documents tab.";return;}}
+  const errs=validate();
+  $("#tab_documents").dataset.err=errs.some(e=>e.n==="__docs")?"1":"0";
+  updateBadges();
+  if(errs.length){
+    const msg=$("#regMsg");msg.className="msg err";
+    msg.textContent=errs.length+(errs.length===1?" item needs":" items need")+" attention: "+errs.slice(0,4).map(e=>e.n==="__docs"?"ID document":FIELDS[e.n].l).join(", ")+(errs.length>4?" and "+(errs.length-4)+" more.":".");
+    const first=errs[0];selectTab(first.sec);
+    if(first.n==="__docs"){$("#docType").focus();}else{const el=$("#f_"+first.n);if(el)el.focus();}
+    return;
+  }
+  const btn=$("#completeReg");btn.disabled=true;btn.textContent="Saving…";
+  try{
+    const fields=readForm();const pid=uid();const now=new Date().toISOString();
+    const docs=staged.map(d=>({id:d.id,patientId:pid,docType:d.docType,docNumber:d.docNumber,docIssuer:d.docIssuer,fileName:d.fileName,mime:d.mime,size:d.size,data:d.data,uploadedAt:d.uploadedAt,uploadedBy:d.uploadedBy}));
+    const p={id:pid,fields,createdAt:now,createdBy:session.user,createdRole:session.role,loginFacility:session.facility,docCount:docs.length};
+    await dbSavePatient(p,docs);
+    await loadPatients();
+    toast("Patient admitted. MRN "+p.mrn+", FIN "+p.fin+".");
+    resetForm();openSummary(pid);
+  }catch(e){console.error(e);toast("The admission couldn't be saved: "+(e&&e.name==="QuotaExceededError"?"browser storage is full.":(e&&e.message)||"storage error."),true);}
+  finally{btn.disabled=false;btn.textContent="Complete admission";}
+}
+
+/* ================= patient list ================= */
+async function loadPatients(){try{patients=await dbAllPatients();}catch(e){patients=[];storageFail(e);}updateStatus();}
+function updateStatus(){$("#sbCount").textContent="Admitted patients: "+patients.length;}
+function renderList(){
+  const q=$("#listSearch").value.trim().toLowerCase(),fac=$("#listFacility").value;
+  const rows=patients.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).filter(p=>{
+    if(fac&&p.fields.facility!==fac)return false;if(!q)return true;
+    return [fullName(p.fields),p.fields.firstName+" "+p.fields.lastName,p.mrn,p.fin,p.fields.mobile].join(" ").toLowerCase().includes(q);});
+  $("#listCount").textContent=patients.length?(rows.length===patients.length?patients.length+" patient"+(patients.length===1?"":"s"):rows.length+" of "+patients.length+" shown"):"";
+  const empty=$("#listEmpty"),wrap=$("#listTableWrap");
+  if(!patients.length){wrap.hidden=true;empty.hidden=false;empty.innerHTML='<h3>No patients admitted yet</h3><p>Patients you register and admit will appear here.</p><button class="btn primary" type="button" data-nav="register">Register patient</button>';return;}
+  if(!rows.length){wrap.hidden=true;empty.hidden=false;empty.innerHTML="<h3>No matching patients</h3><p>Change the search text or facility filter.</p>";return;}
+  empty.hidden=true;wrap.hidden=false;
+  $("#listRows").innerHTML=rows.map(p=>{const f=p.fields;return "<tr>"+
+    '<td class="clip">'+(p.docCount?'<span title="'+p.docCount+" document"+(p.docCount===1?"":"s")+' attached" aria-label="'+p.docCount+' documents attached">'+ICON.clip+"</span>":"")+"</td>"+
+    '<td><button type="button" class="link" data-act="open" data-id="'+p.id+'">'+esc(fullName(f))+"</button></td>"+
+    "<td>"+esc(p.mrn)+"</td><td>"+esc(p.fin)+"</td><td>"+esc(shortAge(f.dob))+" "+esc((f.sex||"").charAt(0))+"</td><td>"+esc(fmtDate(f.dob))+"</td><td>"+esc(f.encounterType)+"</td><td>"+esc(location(f)||"–")+"</td><td>"+esc((f.attending||"").replace(/ \(.*\)$/,""))+"</td><td>"+esc(f.facility)+"</td><td>"+esc(fmtDateTime(f.admitDateTime||p.createdAt))+"</td>"+
+    '<td><div class="actions"><button type="button" class="btn sm" data-act="open" data-id="'+p.id+'">'+ICON.open+'Open</button><button type="button" class="btn sm danger" data-act="delete" data-id="'+p.id+'" aria-label="Delete '+esc(fullName(f))+'">'+ICON.trash+"Delete</button></div></td></tr>";}).join("");
+}
+async function deletePatientFlow(id){
+  const p=patients.find(x=>x.id===id);if(!p)return;
+  const ok=await confirmDialog({title:"Delete patient",html:"<p>Delete <b>"+esc(fullName(p.fields))+"</b> (MRN "+esc(p.mrn)+")?</p><p>This permanently removes the patient record"+(p.docCount?" and "+p.docCount+" attached document"+(p.docCount===1?"":"s"):"")+" from this browser.</p>",yes:"Delete patient"});
+  if(!ok)return;
+  try{await dbDeletePatient(id);await loadPatients();toast("Deleted "+fullName(p.fields)+".");if(currentPatientId===id){currentPatientId=null;showView("list");}else renderList();}
+  catch(e){toast("The patient couldn't be deleted: "+((e&&e.message)||"storage error."),true);}
+}
+
+/* ================= patient summary ================= */
+let summaryDocs=[];
+async function openSummary(id){
+  const p=patients.find(x=>x.id===id);if(!p){showView("list");return;}
+  currentPatientId=id;showView("summary");
+  const f=p.fields,body=$("#summaryBody");
+  const allergy=f.allergyStatus==="Allergies recorded"?(f.allergies||"Allergies recorded"):f.allergyStatus==="No known allergies"?"No known allergies":"Not assessed";
+  const ban=[["MRN",p.mrn],["FIN",p.fin],["DOB",fmtDate(f.dob)],["Age",ageStr(f.dob)],["Sex",f.sex],["Encounter",f.encounterType],["Location",location(f)||"Not assigned"],["Attending",f.attending],["Facility",f.facility],["Admitted",fmtDateTime(f.admitDateTime||p.createdAt)]];
+  let html='<div class="banner"><div><div class="nm">'+esc(fullName(f))+'</div><div class="sub">'+esc([f.preferredName?"Prefers “"+f.preferredName+"”":"",f.mobile].filter(Boolean).join(", "))+'</div><div style="margin-top:6px"><span style="font-size:11px;color:var(--muted)">Allergies</span><div class="'+(f.allergyStatus==="Allergies recorded"?"allergy":"")+'" style="font-weight:700">'+esc(allergy)+"</div></div></div><dl>"+ban.map(([k,v])=>"<div><dt>"+k+"</dt><dd>"+esc(v||"–")+"</dd></div>").join("")+"</dl></div>";
+  const navItems=SECTIONS.map(s=>[s.id,s.title]).concat([["documents","Documents ("+(p.docCount||0)+")"],["audit","Registration details"]]);
+  html+='<div class="sum-layout"><nav class="organizer" aria-label="Chart sections"><div class="group-hdr">Menu</div>'+navItems.map(([id,t])=>'<button type="button" data-jump="'+id+'">'+esc(t)+"</button>").join("")+"</nav><div>";
+  SECTIONS.forEach(s=>{
+    html+='<div class="group" id="sum_'+s.id+'"><div class="group-hdr">'+esc(s.title)+"</div>";
+    const items=[];s.groups.forEach(g=>g.fields.forEach(fd=>{let v;if(fd.n==="_age")v=ageStr(f.dob);else if(fd.n==="_bmi"){const h=parseFloat(f.heightCm),w=parseFloat(f.weightKg);v=(h>0&&w>0)?(w/((h/100)**2)).toFixed(1):"";}else v=f[fd.n];if(fd.t==="date")v=fmtDate(v);if(fd.t==="datetime-local")v=fmtDateTime(v);if(v)items.push([fd.l,v]);}));
+    html+=items.length?'<dl class="kv">'+items.map(([k,v])=>"<div><dt>"+esc(k)+"</dt><dd>"+esc(v).replace(/\n/g,"<br>")+"</dd></div>").join("")+"</dl>":'<div class="none">Nothing recorded.</div>';
+    html+="</div>";
+  });
+  html+='<div class="group" id="sum_documents"><div class="group-hdr">Documents</div><div id="sumDocs" class="none">Loading documents…</div></div>';
+  html+='<div class="group" id="sum_audit"><div class="group-hdr">Registration details</div><dl class="kv"><div><dt>Registered by</dt><dd>'+esc(p.createdBy)+'</dd></div><div><dt>Role</dt><dd>'+esc(p.createdRole)+'</dd></div><div><dt>Logged-in facility</dt><dd>'+esc(p.loginFacility)+'</dd></div><div><dt>Saved</dt><dd>'+esc(fmtDateTime(p.createdAt))+"</dd></div></dl></div>";
+  html+="</div></div>";
+  body.innerHTML=html;
+  body.querySelector(".organizer").addEventListener("click",e=>{const b=e.target.closest("[data-jump]");if(b){const t=$("#sum_"+b.dataset.jump);if(t)t.scrollIntoView({behavior:"smooth",block:"start"});}});
+  try{summaryDocs=await dbDocsFor(id);}catch(e){summaryDocs=[];}
+  if(currentPatientId!==id)return;
+  summaryDocs.sort((a,b)=>a.uploadedAt.localeCompare(b.uploadedAt));
+  const sd=$("#sumDocs");
+  if(!summaryDocs.length){sd.textContent="No documents attached.";return;}
+  sd.className="";
+  sd.innerHTML='<div class="table-wrap" style="border:0"><table class="grid" style="min-width:760px"><thead><tr><th></th><th>Type</th><th>Number</th><th>Issued by</th><th>File name</th><th>Size</th><th>Uploaded</th><th>Actions</th></tr></thead><tbody>'+
+   summaryDocs.map(d=>'<tr><td style="width:36px"><span class="doc-icon '+(isPdf(d.mime)?"pdf":"img")+'">'+(isPdf(d.mime)?"PDF":"IMG")+"</span></td><td>"+esc(d.docType)+"</td><td>"+esc(d.docNumber)+"</td><td>"+esc(d.docIssuer)+'</td><td style="white-space:normal;overflow-wrap:anywhere">'+esc(d.fileName)+"</td><td>"+fmtSize(d.size)+"</td><td>"+esc(fmtDateTime(d.uploadedAt))+'</td><td><div class="actions"><button type="button" class="btn sm" data-dact="view" data-id="'+d.id+'">'+ICON.eye+'View</button><button type="button" class="btn sm" data-dact="download" data-id="'+d.id+'">'+ICON.down+"Download</button></div></td></tr>").join("")+"</tbody></table></div>";
+  sd.addEventListener("click",e=>{const b=e.target.closest("[data-dact]");if(!b)return;const d=summaryDocs.find(x=>x.id===b.dataset.id);if(!d)return;if(b.dataset.dact==="view")openViewer(d);else downloadDoc(d);});
+}
+
+/* ================= viewer ================= */
+let viewerDoc=null,viewerToken=0,viewerUrl=null,viewerLastFocus=null;
+async function openViewer(doc){
+  viewerDoc=doc;const token=++viewerToken;viewerLastFocus=document.activeElement;
+  const m=$("#viewerModal"),body=$("#viewerBody");
+  $("#viewerTitle").textContent=(doc.docType||"Document")+(doc.docNumber?": "+doc.docNumber:"");
+  $("#viewerInfo").innerHTML="<b>"+esc(doc.fileName)+"</b>, "+fmtSize(doc.size||doc.data.byteLength)+(doc.uploadedAt?", uploaded "+esc(fmtDateTime(doc.uploadedAt)):"");
+  body.innerHTML='<div class="viewer-msg">Loading…</div>';m.hidden=false;$("#viewerClose").focus();
+  const blob=bufToBlob(doc.data,doc.mime);
+  if(!isPdf(doc.mime)){const url=await blobToDataURL(blob);if(token!==viewerToken)return;body.innerHTML="";const img=new Image();img.alt=doc.fileName;img.src=url;body.appendChild(img);return;}
+  const holder=document.createElement("div");holder.style.cssText="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%";
+  try{
+    const width=Math.min(body.clientWidth-32,900);
+    body.innerHTML="";body.appendChild(holder);
+    const pages=await renderPdf(doc.data,holder,{width,maxPages:60,onPageCount:n=>{if(token===viewerToken)$("#viewerInfo").innerHTML+=", "+n+(n===1?" page":" pages");}});
+    if(token!==viewerToken)return;
+    if(pages>60){const p=document.createElement("div");p.className="viewer-msg";p.textContent="Showing the first 60 of "+pages+" pages. Download the file to see the rest.";body.appendChild(p);}
+  }catch(e){
+    if(token!==viewerToken)return;
+    body.innerHTML="";viewerUrl=URL.createObjectURL(blob);
+    const fr=document.createElement("iframe");fr.title=doc.fileName;fr.src=viewerUrl;body.appendChild(fr);
+    const p=document.createElement("div");p.className="viewer-msg";p.style.padding="6px";p.textContent="If the PDF doesn't appear, use Download to open it.";body.appendChild(p);
+  }
+}
+function closeViewer(){const m=$("#viewerModal");if(m.hidden)return;m.hidden=true;viewerToken++;$("#viewerBody").innerHTML="";viewerDoc=null;if(viewerUrl){URL.revokeObjectURL(viewerUrl);viewerUrl=null;}if(viewerLastFocus&&viewerLastFocus.focus)viewerLastFocus.focus();}
+
+/* ================= misc ================= */
+function storageFail(e){storageOK=false;const w=$("#storageWarn");w.hidden=false;w.textContent="Browser storage is unavailable ("+((e&&e.message)||"IndexedDB blocked")+"). Patients can't be saved in this view.";}
+function tick(){const d=new Date();$("#sbClock").textContent=fmtDate(d.toISOString())+" "+pad(d.getHours())+":"+pad(d.getMinutes());}
+
+function bind(){
+  document.addEventListener("click",async e=>{
+    const n=e.target.closest("[data-nav]");
+    if(n){const v=n.dataset.nav;if(v==="register"){showView("register");$("#f_lastName").focus();}else showView(v);return;}
+  });
+  $("#listRows").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;if(b.dataset.act==="open")openSummary(b.dataset.id);else if(b.dataset.act==="delete")deletePatientFlow(b.dataset.id);});
+  $("#listSearch").addEventListener("input",renderList);$("#listFacility").addEventListener("change",renderList);
+  fillSelect($("#listFacility"),FACILITIES.map(f=>f.name),"All facilities");
+  $("#completeReg").addEventListener("click",completeAdmission);
+  $("#cancelReg").addEventListener("click",async()=>{if(isDirty()&&!(await confirmDialog({title:"Cancel registration",html:"<p>Discard this registration and any documents you added?</p>",yes:"Discard"})))return;resetForm();showView("list");});
+  $("#sumDelete").addEventListener("click",()=>{if(currentPatientId)deletePatientFlow(currentPatientId);});
+  $("#logoutBtn").addEventListener("click",logout);
+  $("#viewerX").addEventListener("click",closeViewer);$("#viewerClose").addEventListener("click",closeViewer);
+  $("#viewerDownload").addEventListener("click",()=>{if(viewerDoc)downloadDoc(viewerDoc);});
+  $("#viewerModal").addEventListener("click",e=>{if(e.target.id==="viewerModal")closeViewer();});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#viewerModal").hidden)closeViewer();});
+}
+
+async function init(){
+  initLogin();buildForm();bind();tick();setInterval(tick,30000);
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
+  try{if(!window.indexedDB)throw new Error("IndexedDB not supported");await openDB();await loadPatients();}catch(e){storageFail(e);}
+  let s=null;try{s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");}catch(e){s=null;}
+  if(s&&s.user&&s.role&&s.facility&&ROLES.includes(s.role)&&FACILITIES.some(f=>f.name===s.facility)){session=s;enterApp();}
+  else $("#lgUser").focus();
+}
+init();
+})();
+</script>
+</body>
+</html>
